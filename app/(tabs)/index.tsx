@@ -14,10 +14,6 @@ import ReminderItem from "@/components/ReminderItem";
 import React from "react";
 
 export default function HomeScreen() {
-  const db = useSQLiteContext();
-  insertDummyConversations(db);
-
-
   return (
       <SafeAreaView className="flex-1 bg-white">
       <ScrollView>

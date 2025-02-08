@@ -24,7 +24,6 @@ import { DMSerifText_400Regular } from '@expo-google-fonts/dm-serif-text';
 import {
   SQLiteProvider,
 } from "expo-sqlite";
-import { openDatabaseAsync, SQLiteProvider } from "expo-sqlite";
 
 import { migrateDbIfNeeded } from "@/utils/database";
 
