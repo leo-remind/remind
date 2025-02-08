@@ -2,6 +2,7 @@ import { View, Text, SafeAreaView, ScrollView } from "react-native"
 import { StreakCard } from "@/components/StreakCard"
 import { GameCard } from "@/components/GameCard"
 import { useEffect, useState } from "react"
+import React from "react";
 
 export default function DailyPracticeScreen() {
   const [streak, setStreak] = useState(10);

@@ -11,16 +11,12 @@ import { insertDummyConversations } from "@/utils/dummy";
 import { migrateDbIfNeeded } from "@/utils/database";
 import { useSQLiteContext } from "expo-sqlite";
 import ReminderItem from "@/components/ReminderItem";
+import React from "react";
 
 export default function HomeScreen() {
-  
   const db = useSQLiteContext();
+  insertDummyConversations(db);
 
-  let buttonPress = () => {
-    insertDummyConversations(db);
-  }
-
-  // <Button onPress={buttonPress} title="cooking"/>
 
   return (
       <SafeAreaView className="flex-1 bg-white">
@@ -32,7 +28,7 @@ export default function HomeScreen() {
         </View>
         <Text className="text-8xl font-sans text-blue">*</Text>
         </View>
-      <DiaryCard message="" className="bg-light-blue mt-6"/>
+      <DiaryCard message="" className="bg-light-blue mt-6" />
       <View className="px-8 pt-8">
         <Text className="font-sans text-3xl mb-4 font-bold text-black/50">Reminders</Text>
         <View className="bg-light-blue/50 p-4 rounded-xl">
@@ -43,6 +39,7 @@ export default function HomeScreen() {
         <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
         <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
         <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
+        <Link href={{pathname: "/onboarding"}} className="p-24 bg-green">Onboarding Survey</Link>
       </ScrollView>
       </SafeAreaView>
   );

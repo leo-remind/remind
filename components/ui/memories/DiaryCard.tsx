@@ -133,7 +133,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
       ${className || ''}
     `}>
     <View className="flex flex-col p-4">
-        <View className="flex flex-row items-center justify-center w-full h-16 
+        <View className="flex flex-row items-center justify-center w-full h-12 
                       bg-white/50 rounded-full mb-4">
           {renderDateButtons()}
         </View>
@@ -146,7 +146,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
 
         }} className="pl-2"
         ><View>
-          <Text className="text-4xl text-white font-serif mb-2">
+          <Text className="text-4xl text-white font-serif my-2">
             {selectedDateInfo.date}
             {getOrdinalSuffix(selectedDateInfo.date)}{' '}
             {monthNames[selectedDateInfo.month]}

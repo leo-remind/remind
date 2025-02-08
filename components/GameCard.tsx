@@ -1,4 +1,4 @@
-import type React from "react"
+import React from "react"
 import { View, Text, Image, type ImageSourcePropType, TouchableOpacity } from "react-native"
 
 interface GameCardProps {
