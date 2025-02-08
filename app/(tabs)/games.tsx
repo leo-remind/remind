@@ -2,9 +2,8 @@ import { View, Text, SafeAreaView, ScrollView } from "react-native"
 import { StreakCard } from "@/components/StreakCard"
 import { GameCard } from "@/components/GameCard"
 import { useEffect, useState } from "react"
-import { useNavigation } from "@react-navigation/native"
-import React from "react"
-import { useRouter } from "expo-router"
+import React from "react";
+import { useRouter } from "expo-router";
 
 export default function DailyPracticeScreen() {
   const router = useRouter()

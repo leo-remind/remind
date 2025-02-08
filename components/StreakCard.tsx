@@ -1,6 +1,7 @@
-import type React from "react"
+import React from "react"
 import { useEffect, useState } from "react"
 import { View, Text } from "react-native"
+
 
 interface DateProps {
   day: number
@@ -9,9 +10,9 @@ interface DateProps {
 }
 const Day: React.FC<DateProps> = ({ day, isActive, playedToday }) => {
   return (
-    <View className={`w-8 h-8 justify-center items-center ${isActive ? (playedToday ? 'bg-white rounded-2xl' : 'bg-[rgba(0,0,0,0.3)] rounded-2xl') : ''
+    <View className={`w-12 h-12 justify-center items-center rounded-full ${isActive ? (playedToday ? 'bg-white' : 'bg-[#363636]') : ''
       }`}>
-      <Text className={`text-base font-medium ${isActive ? (playedToday ? 'text-green' : 'text-white') : 'text-white'
+      <Text className={`text-base font-lg ${isActive ? (playedToday ? 'text-green' : 'text-white') : 'text-white'
         }`}>
         {day}
       </Text>
@@ -57,14 +58,18 @@ export const StreakCard: React.FC<StreakProps> = ({ streak, playedToday }) => {
   const streakEndIndex = dates.findIndex((date) => date.getDate() === today.getDate())
 
   return (
-    <View className="bg-green rounded-3xl p-4 mx-4 my-2">
-      <Text className="text-[34px] text-white font-normal mb-4">
-        <Text className="font-semibold">{streak}</Text>{streak === 1 ? " Day" : " Days"}
+    <View className={`${playedToday ? "bg-green" : "bg-[#676767]"} rounded-3xl p-4 mx-4 my-2 py-6`}>
+      <View className="flex flex-row justify-between mb-[-1.5rem]">
+      <Text className="text-4xl text-white font-normal mb-4">
+        <Text className="font-bold">{streak}</Text>{streak === 1 ? " Day" : " Days"}
       </Text>
+
+      <Text className={`text-8xl font-bold ${playedToday ? "text-white" : "text-[#232323]"}`}>*</Text>
+      </View>
 
       <View className="relative h-10 justify-center">
         <View
-          className="absolute h-8 bg-[rgba(255,255,255,0.2)] rounded-2xl"
+          className="absolute h-12 bg-white/30 rounded-full"
           style={{
             left: `${(streakStartIndex / 6) * 100}%`,
             right: `${(1 - (streakEndIndex) / 6) * 100}%`,

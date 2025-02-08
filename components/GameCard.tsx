@@ -1,9 +1,10 @@
 import React from "react"
 import { View, Text, Image, type ImageSourcePropType, TouchableOpacity } from "react-native"
 import { useRouter } from "expo-router"
+import { useNavigation } from "@react-navigation/native"
 
 interface GameCardProps {
-  title: string
+  title: string 
   imageUrl: ImageSourcePropType
   gameType: string
 }
