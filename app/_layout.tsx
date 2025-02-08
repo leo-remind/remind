@@ -193,9 +193,15 @@ TaskManager.defineTask(
 
         console.log(place_name);
         
-        await db.execAsync(
+        const result = await db.runAsync(
           `INSERT INTO location (place_name, time_of_polling, lat, lon) VALUES ('${place_name}', CURRENT_TIMESTAMP, ${lat}, ${long})`
         );
+
+        console.log("Location Name saved to DB", result.lastInsertRowId);
+        
+        const location_datas = await db.getAllAsync("SELECT * FROM location;");
+        
+        console.log("location data", location_datas);
 
       } else {
         console.log("No locations data available");

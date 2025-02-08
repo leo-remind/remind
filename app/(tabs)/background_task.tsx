@@ -1,5 +1,3 @@
-// Example code from https://docs.expo.dev/versions/latest/sdk/background-fetch/
-
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Button } from 'react-native';
 import * as BackgroundFetch from 'expo-background-fetch';
