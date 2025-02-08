@@ -1,7 +1,6 @@
-import type React from "react"
-import { View, Text, Image, TouchableOpacity } from "react-native"
-import type { ImageSourcePropType } from "react-native"
-import { useNavigation } from "@react-navigation/native"
+import React from "react"
+import { View, Text, Image, type ImageSourcePropType, TouchableOpacity } from "react-native"
+import { useRouter } from "expo-router"
 
 interface GameCardProps {
   title: string
@@ -10,11 +9,11 @@ interface GameCardProps {
 }
 
 export const GameCard: React.FC<GameCardProps> = ({ title, imageUrl, gameType }) => {
-  const navigation = useNavigation()
+  const router = useRouter()
 
   const handlePress = () => {
     if (gameType === 'memory') {
-      navigation.navigate('MemoryGame')
+      router.push('/games/memory') 
     }
   }
 
