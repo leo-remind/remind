@@ -12,7 +12,6 @@
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
-          "fetch",
           "fetch"
         ],
         "NSPhotoLibraryUsageDescription": "Allow access to photo library to sync your photos",
