@@ -28,7 +28,7 @@ const openai = new OpenAI({
         apiKey: env.OPENAI_API_KEY
     });
 
-export async function chat(db : SQLiteDatabase,query: string)  : Promise<string>{
+export async function chat(db : SQLiteDatabase,query: string)  : Promise<Object>{
     let queryEmbeddings: Float32Array = await createTextEmbedding(query);
 
     //let images = await retrieveRelevantImages(db, queryEmbeddings);
@@ -37,9 +37,11 @@ export async function chat(db : SQLiteDatabase,query: string)  : Promise<string>
     //let peopleIds = getRelevantPeople(db, conversations);
 
     let response = await generate(db,query, conversations, 15);
-    console.log(response);
-    console.log("got response")
-    return response;
+    return {
+        answer: response,
+        photos: [],
+        people: []
+    };
 }
 
 function cosineSimilarity(vecA: Float32Array, vecB: Float32Array) {
