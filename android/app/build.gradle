@@ -87,6 +87,7 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace 'com.anonymous.remind'
+
     defaultConfig {
         applicationId 'com.anonymous.remind'
         minSdkVersion rootProject.ext.minSdkVersion
@@ -144,6 +145,11 @@ android {
             android.packagingOptions[prop] += it
         }
     }
+
+    // kotlinOptions {
+    //     jvmToolchain(21) 
+    // }
+
 }
 
 dependencies {
@@ -174,3 +180,4 @@ dependencies {
         implementation jscFlavor
     }
 }
+
