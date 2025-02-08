@@ -11,6 +11,18 @@ import React, { useEffect, useState } from 'react';
 import { useSQLiteContext,
 type SQLiteDatabase } from 'expo-sqlite';
 
+// import { useAudioRecorder, RecordingOptions, AudioModule, RecordingPresets } from 'expo-audio';
+
+// const startBackgroundRecording = async () => {
+//   await AudioModule.setAudioModeAsync({
+//     allowsRecording: true,
+//     shouldPlayInBackground: true,
+//     interruptionMode: "doNotMix",
+//   });
+
+  // const recording = 
+// }
+
 export default function TabTwoScreen() {
 
   const db = useSQLiteContext();
