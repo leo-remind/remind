@@ -21,9 +21,7 @@ import React from "react";
 import { useFonts, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans' ;
 import { DMSerifText_400Regular } from '@expo-google-fonts/dm-serif-text';
 
-import {
-  SQLiteProvider,
-} from "expo-sqlite";
+import { openDatabaseAsync, SQLiteProvider } from "expo-sqlite";
 
 import { migrateDbIfNeeded } from "@/utils/database";
 
