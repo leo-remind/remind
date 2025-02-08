@@ -3,39 +3,44 @@ import { HfInference } from "@huggingface/inference";
 import OpenAI from "openai";
 import env from "../../env.json";
 
-const openai = new OpenAI({
-    apiKey: env.OPENAI_API_KEY
-});
-
 interface PhotoRow {
     id: number;
-    captionVector: Array<number>;
+    caption_vector: Blob;
 }
 
 interface ConversationRow {
     id: number;
-    summaryVector: Array<number>;
+    summary_vector: string;
+}
+
+interface FaceRow {
+    id: number;
+    face_embedding: Blob;
 }
 
 interface VectorResponse {
     id: number;
-    vector: Array<number>;
+    vector: Float32Array;
     similarity: number;
 }
 
-async function chat(query: string) {
-    let queryEmbeddings: Array<number> = await createTextEmbedding(query);
-    const db = useSQLiteContext();
+const openai = new OpenAI({
+        apiKey: env.OPENAI_API_KEY
+    });
+const THRESHOLD =  0.5;
+
+export async function chat(db : SQLiteDatabase,query: string) {
+    let queryEmbeddings: Float32Array = await createTextEmbedding(query);
 
     let images = await retrieveRelevantImages(db, queryEmbeddings);
     let conversations = await retrieveRelevantConversations(db, queryEmbeddings);
     let peopleIds = getRelevantPeople(db, conversations);
 
-    let response = await generate(query, conversations, 25);
+    let response = await generate(db,query, conversations, 10);
     return response;
 }
 
-function cosineSimilarity(vecA: Array<number>, vecB: Array<number>) {
+function cosineSimilarity(vecA: Float32Array, vecB: Float32Array) {
     const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
     const magnitudeA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
     const magnitudeB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
@@ -43,36 +48,67 @@ function cosineSimilarity(vecA: Array<number>, vecB: Array<number>) {
     return magnitudeA && magnitudeB ? dotProduct / (magnitudeA * magnitudeB) : 0;
 }
   
-async function retrieveRelevantImages(db: SQLiteDatabase, queryEmbedding: Array<number>): Promise<Array<VectorResponse>> {
+async function retrieveRelevantImages(db: SQLiteDatabase, queryEmbedding: Float32Array): Promise<Array<VectorResponse>> {
     const allRows: Array<PhotoRow> = await db.getAllAsync(
         `SELECT id, caption_vector FROM photos`
     );
 
-    const sortedRows: Array<VectorResponse> = allRows
-        .map(row => ({ 
+    const sortedRows: Array<VectorResponse> = await Promise.all(
+        allRows.map(async row => ({ 
             id: row.id,
-            vector: row.captionVector,
-            similarity: cosineSimilarity(row.captionVector, queryEmbedding) 
+            vector: new Float32Array(await row.caption_vector.arrayBuffer()),
+            similarity: cosineSimilarity(
+                new Float32Array(await row.caption_vector.arrayBuffer()),
+                queryEmbedding
+            ) 
         }))
-        .sort((a, b) => b.similarity - a.similarity);
+    );
 
-    return sortedRows;
+    return sortedRows.sort((a, b) => b.similarity - a.similarity).filter((num) => num.similarity > THRESHOLD);
 }
 
-async function retrieveRelevantConversations(db: SQLiteDatabase, queryEmbedding: Array<number>): Promise<Array<VectorResponse>> {
+async function retrieveRelevantConversations(db: SQLiteDatabase, queryEmbedding: Float32Array): Promise<Array<VectorResponse>> {
     const allRows: Array<ConversationRow> = await db.getAllAsync(
         `SELECT id, summary_vector FROM conversations`
     );
 
-    const sortedRows: Array<VectorResponse> = allRows
-        .map(row => ({ 
+    const sortedRows: Array<VectorResponse> = await Promise.all(
+        allRows.map(async row => ({ 
             id: row.id,
-            vector: row.summaryVector,
-            similarity: cosineSimilarity(row.summaryVector, queryEmbedding) 
+            vector: new Float32Array(eval(row.summary_vector)),
+            similarity: cosineSimilarity(
+                new Float32Array(eval(row.summary_vector)),
+                queryEmbedding
+            ) 
         }))
-        .sort((a, b) => b.similarity - a.similarity);
+    );
 
-    return sortedRows;
+    return sortedRows.sort((a, b) => b.similarity - a.similarity).filter((num) => num.similarity > THRESHOLD);
+}
+
+export async function getHighestMatchingFace(targetFaceEmbedding: Float32Array, threshold: number): Promise<number|null> {
+    const db = useSQLiteContext();
+    
+    const allRows: Array<FaceRow> = await db.getAllAsync(
+        `SELECT id, face_embedding FROM persons`
+    );
+
+    const sortedRows: Array<VectorResponse> = await Promise.all(
+        allRows.map(async row => ({ 
+            id: row.id,
+            vector: new Float32Array(await row.face_embedding.arrayBuffer()),
+            similarity: cosineSimilarity(
+                new Float32Array(await row.face_embedding.arrayBuffer()),
+                targetFaceEmbedding
+            ) 
+        }))
+    );
+    
+    const filteredRows = sortedRows
+        .sort((a, b) => b.similarity - a.similarity)
+        .filter(item => item.similarity >= threshold);
+    
+    return filteredRows.length > 0 ? filteredRows[0].id : null;
 }
 
 async function getRelevantPeople(db: SQLiteDatabase, conversations: Array<VectorResponse>): Promise<Array<number>> {
@@ -89,35 +125,31 @@ async function getRelevantPeople(db: SQLiteDatabase, conversations: Array<Vector
     return peopleFrequency.map(row => row.personId);
 }
 
-async function generate(query: string, conversations: Array<VectorResponse>, context: number): Promise<string> {
+async function generate(db:SQLiteDatabase, query: string, conversations: Array<VectorResponse>, context: number): Promise<string> {
+    try {
+    console.log("trying")
     const relevantConversations = conversations.slice(0, context);
     const conversationIds = relevantConversations.map(conv => conv.id);
-    const db = useSQLiteContext();
     
     const conversationData = await db.getAllAsync<{ 
         id: number;
         summary: string;
         transcriptStart: string;
         transcriptEnd: string;
-        personIds: string;
     }>(`
         SELECT 
             id, 
             summary, 
             transcript_start as transcriptStart, 
-            transcript_end as transcriptEnd, 
-            person_ids as personIds
+            transcript_end as transcriptEnd 
         FROM conversations
         WHERE id IN (${conversationIds.join(',')})
     `);
     
     const contextString = conversationData
-        .map(conv => `Conversation ${conv.id}:
-Time: ${new Date(conv.transcriptStart).toLocaleString()} - ${new Date(conv.transcriptEnd).toLocaleString()}
-Summary: ${conv.summary}
-People involved: ${conv.personIds}
----`)
+        .map(conv => `Summary: ${conv.summary}`)
         .join('\n');
+   console.log(contextString) ;
     
     const completion = await openai.chat.completions.create({
         model: "gpt-4-turbo-preview",
@@ -135,10 +167,15 @@ People involved: ${conv.personIds}
         max_tokens: 500
     });
 
+    console.log("yummy")
+    console.log(completion.choices[0].message)
     return completion.choices[0].message.content || "I couldn't generate a response based on the available context.";
+} catch (err) {
+    console.log(err)
+}
 }
 
-export async function createImageEmbedding(image: Blob) {
+export async function createImageEmbedding(image: Blob): Promise<Float32Array> {
     const inference = new HfInference(env.HF_TOKEN);
     const result = await inference.imageToText({
         data: image,
@@ -148,13 +185,19 @@ export async function createImageEmbedding(image: Blob) {
     return await createTextEmbedding(result.generated_text!);
 }
 
-export async function createTextEmbedding(text: string): Promise<Array<number>> {
-    console.log("embedding: " + text)
+export async function createTextEmbedding(text: string): Promise<Float32Array> {
+    console.log("embedding: " + text);
+    try {
     const embedding = await openai.embeddings.create({
         model: "text-embedding-3-small",
-        input: text,  // Fixed: Using the actual text parameter instead of hardcoded string
+        input: text,
         encoding_format: "float",
     });
+    console.log("done")
 
-    return embedding.data[0].embedding;
+    return new Float32Array(embedding.data[0].embedding);
+} catch (err) {
+    console.log(err)
+    console.log("this is so sad")
+}
 }

@@ -14,7 +14,7 @@ async function fetchImageBlob(url: string): Promise<Blob> {
 }
 
 export async function testImageVector() {
-    let data = await fetchImageBlob("https://prdaficalmjediwestussa.blob.core.windows.net/images/2020/07/AFI20_THE_MATRIX_Social-Assets_B_v1_2_BLOG.jpg")
+    let data = await fetchImageBlob("https://m.media-amazon.com/images/I/81DIUl8LA0S.jpg")
     let embedding = await createImageEmbedding(data);
     console.log(embedding);
 }
