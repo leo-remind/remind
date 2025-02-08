@@ -62,10 +62,10 @@ export async function migrateDbIfNeeded(db: SQLite.SQLiteDatabase) {
   await db.execAsync(
     `CREATE TABLE IF NOT EXISTS persons (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      birthdate DATE NOT NULL,
-      relation TEXT NOT NULL,
-      speech_embedding BLOB NOT NULL,
+      name TEXT NULL,
+      birthdate DATE NULL,
+      relation TEXT NULL,
+      audio BLOB NULL,
       face_embedding BLOB,
       photo_data BLOB
     );`
@@ -76,10 +76,9 @@ export async function migrateDbIfNeeded(db: SQLite.SQLiteDatabase) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       blob_data BLOB NOT NULL,
       time_created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      caption TEXT NOT NULL,
-      caption_vector BLOB NOT NULL,
+      caption TEXT NULL,
+      caption_vector BLOB NULL,
       location_id INTEGER,
-      person_ids TEXT,
       FOREIGN KEY (location_id) REFERENCES location(id)
     );`
   );
