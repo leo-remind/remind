@@ -15,7 +15,6 @@ import React, { useEffect } from "react";
 import { addDummyData } from "@/lib/conversations";
 
 export default function HomeScreen() {
-<<<<<<< .merge_file_xDsaRU
 
   const db = useSQLiteContext();
 
@@ -42,8 +41,6 @@ export default function HomeScreen() {
     return { remg: hours == 0 ? `${minutes} mins` : `${hours} hours - ${minutes} mins`, text: reminder_text, subtitle: subtitle, id: id }
   })
 
-=======
->>>>>>> .merge_file_fF9yUw
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView>
@@ -54,7 +51,6 @@ export default function HomeScreen() {
           </View>
           <Text className="text-8xl font-sans text-blue">*</Text>
         </View>
-<<<<<<< .merge_file_xDsaRU
         <DiaryCard message="" className="bg-light-blue mt-6" />
         <View className="px-8 pt-8">
           <Text className="font-sans text-3xl mb-4 font-bold text-black/50">Reminders</Text>
@@ -69,20 +65,6 @@ export default function HomeScreen() {
             }
           )
         }
-=======
-      <DiaryCard message="" className="bg-light-blue mt-6" />
-      <View className="px-8 pt-8">
-        <Text className="font-sans text-3xl mb-4 font-bold text-black/50">Reminders</Text>
-        <View className="bg-light-blue/50 p-4 rounded-xl">
-          <Text className="text-4xl font-bold color-blue m-auto">+</Text>
-        </View>
-      </View>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
-        <Link href={{pathname: "/onboarding"}} className="p-24 bg-green">Onboarding Survey</Link>
->>>>>>> .merge_file_fF9yUw
       </ScrollView>
     </SafeAreaView>
   );
