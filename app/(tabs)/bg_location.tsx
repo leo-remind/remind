@@ -1,92 +1,92 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import * as Location from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import * as Location from "expo-location";
+import * as TaskManager from "expo-task-manager";
 
-const LOCATION_TRACKING = 'location-tracking';
+const LOCATION_TRACKING = "location-tracking";
 
 var l1;
 var l2;
 
 function UserLocation() {
+  const [locationStarted, setLocationStarted] = React.useState(false);
 
-    const [locationStarted, setLocationStarted] = React.useState(false);
+  const startLocationTracking = async () => {
+    await Location.startLocationUpdatesAsync(LOCATION_TRACKING, {
+      accuracy: Location.Accuracy.Highest,
+      timeInterval: 5000,
+      distanceInterval: 0,
+    });
+    const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+      LOCATION_TRACKING
+    );
+    setLocationStarted(hasStarted);
+    console.log("tracking started?", hasStarted);
+  };
 
-    const startLocationTracking = async () => {
-        await Location.startLocationUpdatesAsync(LOCATION_TRACKING, {
-            accuracy: Location.Accuracy.Highest,
-            timeInterval: 5000,
-            distanceInterval: 0,
-        });
-        const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-            LOCATION_TRACKING
-        );
-        setLocationStarted(hasStarted);
-        console.log('tracking started?', hasStarted);
+  React.useEffect(() => {
+    const config = async () => {
+      let resf = await Location.requestForegroundPermissionsAsync();
+      let resb = await Location.requestBackgroundPermissionsAsync();
+      if (resf.status != "granted" && resb.status !== "granted") {
+        console.log("Permission to access location was denied");
+      } else {
+        console.log("Permission to access location granted");
+      }
     };
 
-    React.useEffect(() => {
-        const config = async () => {
-            let resf = await Location.requestForegroundPermissionsAsync();
-            let resb = await Location.requestBackgroundPermissionsAsync();
-            if (resf.status != 'granted' && resb.status !== 'granted') {
-                console.log('Permission to access location was denied');
-            } else {
-                console.log('Permission to access location granted');
-            }
-        };
+    config();
+  }, []);
 
-        config();
-    }, []);
+  const startLocation = () => {
+    startLocationTracking();
+  };
 
-    const startLocation = () => {
-      
-        startLocationTracking();
-    }
+  const stopLocation = () => {
+    setLocationStarted(false);
+    TaskManager.isTaskRegisteredAsync(LOCATION_TRACKING).then((tracking) => {
+      if (tracking) {
+        Location.stopLocationUpdatesAsync(LOCATION_TRACKING);
+      }
+    });
+  };
 
-    const stopLocation = () => {
-        setLocationStarted(false);
-        TaskManager.isTaskRegisteredAsync(LOCATION_TRACKING)
-            .then((tracking) => {
-                if (tracking) {
-                    Location.stopLocationUpdatesAsync(LOCATION_TRACKING);
-                }
-            })
-    }
-
-    return (
-        <View>
-          {locationStarted ?
-              <TouchableOpacity onPress={stopLocation}>
-                  <Text style={styles.btnText}>Stop Tracking</Text>
-              </TouchableOpacity>
-              :
-              <TouchableOpacity onPress={startLocation}>
-                  <Text style={styles.btnText}>Start Tracking</Text>
-              </TouchableOpacity>
-          }
-        </View>
-    );
+  return (
+    <View>
+      {locationStarted ? (
+        <TouchableOpacity onPress={stopLocation}>
+          <Text style={styles.btnText}>Stop Tracking</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={startLocation}>
+          <Text style={styles.btnText}>Start Tracking</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    btnText: {
-        fontSize: 20,
-        backgroundColor: 'green',
-        color: 'white',
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        borderRadius: 5,
-        marginTop: 10,
-    },
+  btnText: {
+    fontSize: 20,
+    backgroundColor: "green",
+    color: "white",
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
 });
 
-TaskManager.defineTask(LOCATION_TRACKING, async ({ data, error }) => {
+TaskManager.defineTask(
+  LOCATION_TRACKING,
+  async ({ data, error }: { data: any; error: any }) => {
     if (error) {
-        console.log('LOCATION_TRACKING task ERROR:', error);
-        return;
+      console.log("LOCATION_TRACKING task ERROR:", error);
+      return;
     }
     if (data) {
+      if (data.locations) {
         const { locations } = data;
         let lat = locations[0].coords.latitude;
         let long = locations[0].coords.longitude;
@@ -94,10 +94,12 @@ TaskManager.defineTask(LOCATION_TRACKING, async ({ data, error }) => {
         l1 = lat;
         l2 = long;
 
-        console.log(
-            `${new Date(Date.now()).toLocaleString()}: ${lat},${long}`
-        );
+        console.log(`${new Date(Date.now()).toLocaleString()}: ${lat},${long}`);
+      } else {
+        console.log("No locations data available");
+      }
     }
-});
+  }
+);
 
 export default UserLocation;
