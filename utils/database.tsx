@@ -8,10 +8,7 @@ export async function migrateDbIfNeeded(db: SQLite.SQLiteDatabase) {
       summary_vector BLOB NOT NULL,
       time_created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       transcript_start TIMESTAMP NOT NULL,
-      transcript_end TIMESTAMP NOT NULL,
-      person_ids TEXT,
-      location_id INTEGER,
-      FOREIGN KEY (location_id) REFERENCES location(id)
+      transcript_end TIMESTAMP NOT NULL
     );`
   );
 
