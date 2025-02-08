@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
+import { openDatabaseAsync, type SQLiteDatabase } from "expo-sqlite";
+import get from "axios";
 
 const LOCATION_TRACKING = "location-tracking";
 
@@ -94,7 +96,18 @@ TaskManager.defineTask(
         l1 = lat;
         l2 = long;
 
-        console.log(`${new Date(Date.now()).toLocaleString()}: ${lat},${long}`);
+        const db = await openDatabaseAsync("remind_db.sqlite");
+        // query nominatim to get district
+        // https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=-34.44076&lon=-58.70521
+        
+        const axios_output = await get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${long}`)
+        // parse the json to get display name
+        const place_name = axios_output.data.display_name;
+
+        await db.execAsync(
+          `INSERT INTO location (place_name, time_of_polling, lat, lon) VALUES ('${place_name}', CURRENT_TIMESTAMP, ${lat}, ${long})`
+        );
+
       } else {
         console.log("No locations data available");
       }
