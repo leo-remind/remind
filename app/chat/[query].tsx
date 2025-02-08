@@ -4,9 +4,11 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { SQLiteAnyDatabase } from "expo-sqlite/build/NativeStatement";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Image, StyleSheet, Platform, Pressable, Text, View, Button, ScrollView, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+var chatDone = false;
 
 function App() {
   const { query } = useLocalSearchParams();
@@ -17,9 +19,7 @@ function App() {
            <ScrollView>
             <View className="flex-row justify-between items-start px-8 pt-8">
                 <ChatComponent />
-                <Suspense fallback={<SkeletonLoader/>}>
-                  <ChatResponse query={query} db={db}/>
-                </Suspense>
+                <ChatResponse query={query} db={db}/>
             </View>
            </ScrollView>
         </SafeAreaView>
@@ -30,20 +30,14 @@ function ChatComponent() {
   const [value,setValue] = useState("");
     return <View
         style={{
-          position: "relative",
+          position: "absolute",
           left: 0,
           right: 0,
+          top: 0,
           zIndex: 1,
           paddingHorizontal: 16,
           paddingVertical: 8,
           backgroundColor: "#fff",
-          borderWidth: 1,
-          borderTopColor: "#dddddd",
-          borderRightColor: "#dddddd",
-          borderLeftColor: "#dddddd",
-          borderBottomColor: "#ffffff",
-          borderTopRightRadius: 32,
-          borderTopLeftRadius: 32,
         }}
       >
         <View
@@ -92,25 +86,52 @@ const SkeletonLoader = () => {
   );
 };
 
-async function ChatResponse({db, query})  {
-  response = chat(db, query)
+export default function ChatResponse({ db, query }) {
+  const [answer, setAnswer] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    async function fetchChat() {
+      const response = await chat(db, query);
+      if (isMounted) {
+        setAnswer(response.answer);
+      }
+    }
+
+    fetchChat();
+
+    return () => {
+      isMounted = false; // Cleanup function to prevent memory leaks
+    };
+  }, [db, query]); // Runs only when `db` or `query` changes
 
   return (
-    <View className="flex flex-col">
-      <Text className="text-2xl p-8 font-bold py-4">{response.answer}</Text>
+    <View className="flex flex-col mt-12">
+      <Text className="text-blue text-lg text-blue font-black mt-4">ANSWER</Text>
+      <Text className="text-xl font-bold pb-4">{answer}</Text>
+      
+      <Text className="text-lg mt-4 font-black text-blue">PHOTOS</Text>
       <View className="flex-row flex flex-wrap">
-          <Image source={{uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png"}} className="w-[33%] aspect-square"/>
-          <Image source={{uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png"}} className="w-[33%] aspect-square"/>
-          <Image source={{uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png"}} className="w-[33%] aspect-square"/>
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] h-96 aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] h-96 aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
       </View>
-      <PeopleGrid profiles={[
-      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      ]}/>
-    </View>
-  )
 
+      <PeopleGrid
+        profiles={[
+      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
+      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
+      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
+
+        ]}
+      />
+
+    </View>
+  );
 }
 
 export default App

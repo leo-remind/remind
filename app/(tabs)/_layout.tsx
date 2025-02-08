@@ -1,4 +1,4 @@
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import React, { useState } from "react";
 import { Platform, Image, View, Text, TextInput } from "react-native";
 
@@ -10,6 +10,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { chat } from "@/utils/rag/rag";
 import { useSQLiteContext } from "expo-sqlite";
+import { router } from 'expo-router';
 
 function LogoTitle(props: any) {
   return (
@@ -25,6 +26,16 @@ function LogoTitle(props: any) {
 
 export default function TabLayout() {
   const [value,setValue] = useState("");
+
+  const redirect = () => {
+        console.log("redirecto")
+        router.push({
+                  pathname: "/chat/[query]",
+                  params: {
+                    query: value
+                  }
+                });
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -59,14 +70,7 @@ export default function TabLayout() {
           }}
         >
           <TextInput
-            onSubmitEditing={() => {
-              Redirect({
-                href : {
-                  pathname: "/chat/[query]",
-                  query: value
-                }
-              })
-            }}
+            onSubmitEditing={redirect}
             onChangeText={newValue => setValue(newValue)}
             placeholder="Ask me anything!"
             style={{
