@@ -50,8 +50,7 @@ export default function HomeScreen() {
           </View>
         </View>
         <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
+        <ReminderItem heading="Call you Mama" subtitle="You had a conversation with him about school" timeLeft="3 HOURS" />
         <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
       </ScrollView>
     </SafeAreaView>
