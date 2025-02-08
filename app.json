@@ -107,6 +107,10 @@
       ],
       [
         "@siteed/expo-audio-stream"
+        
+      ],
+      [
+        "expo-notifications"
       ]
     ],
     "experiments": {

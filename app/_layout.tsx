@@ -41,7 +41,7 @@ import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
 import { addConversation } from "@/lib/conversations";
 
-// import { MediaSync } from "@/utils/MediaSync&Face";
+import { MediaSync } from "@/utils/MediaSync&Face";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -260,8 +260,8 @@ TaskManager.defineTask(
 
         console.log("Inserted location with ID: ", result.lastInsertRowId);
 
-        // const ms = new MediaSync(db);
-        // await ms.syncPhotos();
+        const ms = new MediaSync(db);
+        await ms.syncPhotos();
 
       } else {
         console.log("No locations data available");
