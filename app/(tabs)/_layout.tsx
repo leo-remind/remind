@@ -11,7 +11,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { chat } from "@/utils/rag/rag";
 import { useSQLiteContext } from "expo-sqlite";
 
-function LogoTitle() {
+function LogoTitle(props: any) {
   return (
     <View className="flex flex-row gap-x-2">
       <Image
@@ -27,7 +27,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme()
   const db = useSQLiteContext();
 
-  const [value,setValue] = useState("");
+  const [value, setValue] = useState("");
 
   return (
     <View style={{ flex: 1 }}>
@@ -65,7 +65,7 @@ export default function TabLayout() {
             onSubmitEditing={() => {
               chat(db, value)
             }}
-            onChangeText ={ newValue => setValue(newValue)}
+            onChangeText={newValue => setValue(newValue)}
             placeholder="Ask me anything!"
             style={{
               flex: 1,
@@ -117,19 +117,30 @@ export default function TabLayout() {
           name="memories/index"
           options={{
             title: "Memories",
-            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="my-library-books" color={color} />,
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="figure.strengthtraining.traditional" color={color} />
+            ),
           }}
         />
         <Tabs.Screen
           name="games"
           options={{
-            title: "Games",
-            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="videogame-asset" color={color} />,
+            title: 'Games',
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="gamepad.fill" color={color} />
+            ),
           }}
         />
-        
+        <Tabs.Screen
+          name="practice"
+          options={{
+            title: "Practice",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="gamepad.fill" color={color} />
+            ),
+          }}
+        />
       </Tabs>
     </View>
-  )
+  );
 }
-
