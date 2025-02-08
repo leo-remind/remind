@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { insertDummyConversations } from "@/utils/dummy";
 import { migrateDbIfNeeded } from "@/utils/database";
 import { useSQLiteContext } from "expo-sqlite";
+import React from "react";
 
 export default function HomeScreen() {
   
