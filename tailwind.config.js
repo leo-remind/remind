@@ -1,6 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+const globSync = require('glob').sync;
+
 module.exports = {
-  content: ["./app/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    ...globSync('./app/**/*.tsx'),
+    ...globSync('./components/**/*.tsx'),
+    "./components/**/*.tsx",
+  ],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {},
@@ -21,4 +27,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
+};
