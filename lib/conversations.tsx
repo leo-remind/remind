@@ -133,6 +133,7 @@ const generateConvSummary = async (convo: string, user: string): Promise<string 
 }
 export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, transcriptStart: string, transcriptEnd: string): Promise<boolean> => {
   try {
+    console.log("yo");
     const persons: { 'id': number, 'name': string, 'speech_embedding': Uint8Array }[] = await db.getAllAsync("SELECT * FROM persons");
     const ret: { 'name': string } | null = await db.getFirstAsync("SELECT * FROM persons WHERE id = 0;")
     const userName = ret ? ret.name : "person_0";
@@ -190,6 +191,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
 
   } catch (error) {
     console.log(`errored ${error}`, JSON.stringify(error))
+    // console.log("LARGE FUCKING ERROR");
     return false
   }
 }

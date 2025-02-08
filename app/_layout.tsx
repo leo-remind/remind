@@ -10,6 +10,8 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useLayoutEffect, useState } from "react";
 import "react-native-reanimated";
 
+import { Buffer } from "buffer";
+
 import get from "axios";
 
 import * as Location from "expo-location";
@@ -84,10 +86,10 @@ function ChildComponent() {
       return;
     }
     const startResult = await startRecording({
-      interval: 1000 * 60 * 1,
+      interval: 1000 * 20 * 1,
       enableProcessing: true,
       onAudioStream: async (adEvent: AudioDataEvent) => {
-        console.log(adEvent);
+        // console.log(adEvent);
         // adEvent.data is base64 encoded string representing the audio buffer.
 
         const audioDataB642 = await FileSystem.readAsStringAsync(
@@ -97,12 +99,15 @@ function ChildComponent() {
           }
         );
 
-        const audioData2 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
-
+        console.log("Read as string");
+        const audioData2 = new Uint8Array(
+          Buffer.from(audioDataB642, "base64")
+        );
+        console.log("Converted");
         // Call arbaaz code
         const db = await openDatabaseAsync("remind_db.sqlite");
         await addConversation(db, audioData2, "", "");
-
+        console.log("CALLED ARBI CODE");
       },
     });
     return startResult;
@@ -173,16 +178,14 @@ function ChildComponent() {
 TaskManager.defineTask(
   LOCATION_TRACKING,
   async ({ data, error }: { data: any; error: any }) => {
-
     callCounter++;
 
     console.log(callCounter);
-    
+
     if (callCounter % 720 == 0) {
       console.log("Running memory tasks");
 
       const db = await openDatabaseAsync("remind_db.sqlite");
-
     }
 
     if (error) {
@@ -215,7 +218,6 @@ TaskManager.defineTask(
         console.log("Inserted location with ID: ", result.lastInsertRowId);
 
         const location_datas = await db.getAllAsync("SELECT * FROM location;");
-
       } else {
         console.log("No locations data available");
       }
