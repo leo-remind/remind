@@ -10,11 +10,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { insertDummyConversations } from "@/utils/dummy";
 import { migrateDbIfNeeded } from "@/utils/database";
 import { useSQLiteContext } from "expo-sqlite";
-<<<<<<< HEAD
 import ReminderItem from "@/components/ReminderItem";
-=======
 import React from "react";
->>>>>>> main
 
 export default function HomeScreen() {
   
