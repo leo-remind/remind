@@ -1,32 +1,35 @@
 import DiaryCard from "@/components/ui/memories/DiaryCard";
-import { StyleSheet, Image, Platform, View, Text, SafeAreaView , ScrollView} from "react-native";
+import { useSQLiteContext } from "expo-sqlite";
+import { StyleSheet, Image, Platform, View, Text, SafeAreaView, ScrollView } from "react-native";
+import React from "react"
+import { addDummyData } from "@/lib/conversations";
 
 export default function MemoriesScreen() {
   return <SafeAreaView className="flex-1 bg-white">
     <ScrollView>
-    <View className="flex-row justify-between items-start px-8 pt-8 mt-2">
-      <View>
-        <Text className="text-4xl font-sans">Your</Text>
-        <Text className="text-4xl font-sans text-orange font-bold">Memories</Text>
+      <View className="flex-row justify-between items-start px-8 pt-8 mt-2">
+        <View>
+          <Text className="text-4xl font-sans">Your</Text>
+          <Text className="text-4xl font-sans text-orange font-bold">Memories</Text>
+        </View>
+        <Text className="text-8xl font-sans text-orange">*</Text>
       </View>
-      <Text className="text-8xl font-sans text-orange">*</Text>
-    </View>
-    <View className="flex flex-row justify-between px-8 mb-2">
-      <Text className="text-xl font-bold font-sans">Calender</Text>
-      <Text className="underline text-orange font-sans text-xl">List All</Text>
-    </View>
-    <DiaryCard message="" className="bg-light-orange" />
-    <View className="flex flex-row justify-between px-8 mt-4 mb-2">
-      <Text className="text-xl font-bold font-sans">Trips</Text>
-      <Text className="underline text-orange font-sans text-xl">List All</Text>
-    </View>
-    <Trips />
+      <View className="flex flex-row justify-between px-8 mb-2">
+        <Text className="text-xl font-bold font-sans">Calender</Text>
+        <Text className="underline text-orange font-sans text-xl">List All</Text>
+      </View>
+      <DiaryCard message="" className="bg-light-orange" />
+      <View className="flex flex-row justify-between px-8 mt-4 mb-2">
+        <Text className="text-xl font-bold font-sans">Trips</Text>
+        <Text className="underline text-orange font-sans text-xl">List All</Text>
+      </View>
+      <Trips />
 
-    <View className="flex flex-row justify-between px-8 mt-4 mb-2">
-      <Text className="text-xl font-bold font-sans">People</Text>
-      <Text className="underline text-orange font-sans text-xl">List All</Text>
-    </View>
-    <People />
+      <View className="flex flex-row justify-between px-8 mt-4 mb-2">
+        <Text className="text-xl font-bold font-sans">People</Text>
+        <Text className="underline text-orange font-sans text-xl">List All</Text>
+      </View>
+      <People />
     </ScrollView>
 
   </SafeAreaView>
@@ -42,19 +45,41 @@ function Trips() {
   </View>
 }
 
+
+const imgToUri = (arr: null | Uint8Array): string => {
+  if (!arr) {
+    return `data:image/jpeg;base64,`
+  }
+  const b64d = Array.from(arr)
+    .map(byte => String.fromCharCode(byte))
+    .join('');
+
+  const b64s = btoa(b64d);
+  return `data:image/jpeg;base64,${b64s}`
+}
+
 function People() {
-  return <View><PeopleGrid
-    profiles={[
-      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-    ]}
+  const db = useSQLiteContext()
+  const persons: { 'name': string, 'photo_data': Uint8Array }[] = db.getAllSync("SELECT * FROM persons;")
+
+  const parsedPersons = persons.map(({ name, photo_data }) => {
+    return { "imageUri": imgToUri(photo_data), "text": name }
+  })
+
+  return <View>< PeopleGrid
+    profiles={
+      // [
+      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
+      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
+      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },]
+      parsedPersons
+    }
   />
-  </View>;
+  </View >;
 }
 
 interface People {
-  imageUrl?: string;
+  imageUri?: string;
   text: string;
 }
 
@@ -86,7 +111,7 @@ const PeopleGrid: React.FC<PeopleGridProps> = ({
             `}
           >
             <Image
-              source={{ uri: profile.imageUrl}}
+              source={{ uri: profile.imageUri }}
               alt={profile.text}
               className="w-full h-full object-cover"
             />
@@ -120,10 +145,10 @@ const TripCarousel: React.FC<TripCarouselProps> = ({ items }) => {
             className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
           >
             <Image
-              source={{uri:item.src}}
+              source={{ uri: item.src }}
               alt={item.heading}
               style={{
-                width : "100%",
+                width: "100%",
                 height: "100%",
                 objectFit: "cover"
               }}

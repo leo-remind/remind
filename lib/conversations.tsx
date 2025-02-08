@@ -27,18 +27,24 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await db.runAsync("DELETE FROM persons;")
 
     const [{ localUri }] = await Asset.loadAsync(require("../assets/audio/arb.wav"))
+    const [{ localUri: localUriImg }] = await Asset.loadAsync(require("../assets/images/group_14.png"))
     const [{ localUri: localUri2 }] = await Asset.loadAsync(require("../assets/audio/pjr.wav"))
     const [{ localUri: localUriAmerica }] = await Asset.loadAsync(require("../assets/audio/america.wav"))
-    if (!localUri || !localUri2 || !localUriAmerica) {
+    if (!localUri || !localUriImg || !localUri2 || !localUriAmerica) {
       console.log("no uri");
       return
     }
     const audioFileURI = FileSystem.documentDirectory + "arb.wav";
     const audioFileURI2 = FileSystem.documentDirectory + "pjr.wav";
     const audioFileURIAmer = FileSystem.documentDirectory + "america.wav";
+    const imgFile = FileSystem.documentDirectory + "group_14.png";
     await FileSystem.copyAsync({
       from: localUri,
       to: audioFileURI
+    })
+    await FileSystem.copyAsync({
+      from: localUriImg,
+      to: imgFile
     })
 
     await FileSystem.copyAsync({
@@ -62,12 +68,18 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const audioData2 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
 
+    const imgDataB6 = await FileSystem.readAsStringAsync(imgFile, {
+      encoding: FileSystem.EncodingType.Base64
+    });
+
+    const imgData = new Uint8Array(Buffer.from(imgDataB6, "base64"));
+
 
     await db.runAsync(`
-    INSERT INTO PERSONS (name, birthdate, relation, speech_embedding)
-    VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?),
-    ("Pranjal Rastogi", 2002-04-12, "Uncle", ?);
-  `, audioData, audioData2);
+    INSERT INTO PERSONS (name, birthdate, relation, audio, photo_data)
+    VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?, ?),
+    ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);
+  `, audioData, imgData, audioData2, imgData);
     console.log("added dummy data");
   } catch (error) {
     console.log(error)
@@ -137,14 +149,14 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     const creationTime = new Date().toISOString();
 
     console.log("yo");
-    const persons: { 'id': number, 'name': string, 'speech_embedding': Uint8Array }[] = await db.getAllAsync("SELECT * FROM persons");
+    const persons: { 'id': number, 'name': string, 'audio': Uint8Array }[] = await db.getAllAsync("SELECT * FROM persons");
     const ret: { 'name': string } | null = await db.getFirstAsync("SELECT * FROM persons WHERE id = 0;")
     const userName = ret ? ret.name : "person_0";
     console.log("user is", userName)
 
     const formData = new FormData()
     for (let person of persons) {
-      formData.append("files", wavToBlob(person.speech_embedding, `${person.id}.wav`))
+      formData.append("files", wavToBlob(person.audio, `${person.id}.wav`))
     }
 
     formData.append("files", wavToBlob(convo, "convo.wav"))
@@ -180,7 +192,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     const summary = await generateConvSummary(fullConvo, userName)
     console.log("summarized:", summary)
 
-    
+
     const result = await db.getFirstAsync(`
       SELECT id 
       FROM location 
@@ -191,7 +203,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
       )
       LIMIT 1
     `, [creationTime, creationTime, creationTime, creationTime]);
-    
+
     const insertionResult = await db.runAsync(`
       INSERT INTO conversations (summary, summary_vector, transcript_start, transcript_end, location_id)
       VALUES (?, ?, ?, ?, ?);

@@ -11,40 +11,49 @@ import { insertDummyConversations } from "@/utils/dummy";
 import { migrateDbIfNeeded } from "@/utils/database";
 import { useSQLiteContext } from "expo-sqlite";
 import ReminderItem from "@/components/ReminderItem";
-import React from "react";
+import React, { useEffect } from "react";
+import { addDummyData } from "@/lib/conversations";
 
 export default function HomeScreen() {
-  
+
   const db = useSQLiteContext();
 
   let buttonPress = () => {
     insertDummyConversations(db);
   }
 
+  useEffect(() => {
+    const fn = async () => {
+      await addDummyData(db);
+      console.log("added data")
+    }
+    fn()
+  }, [])
+
   // <Button onPress={buttonPress} title="cooking"/>
 
   return (
-      <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView>
-      <View className="flex-row justify-between items-start px-8 pt-8">
-        <View>
-          <Text className="text-4xl font-sans">Welcome</Text>
-          <Text className="text-4xl font-sans text-blue font-bold">Arbaaz</Text>
+        <View className="flex-row justify-between items-start px-8 pt-8">
+          <View>
+            <Text className="text-4xl font-sans">Welcome</Text>
+            <Text className="text-4xl font-sans text-blue font-bold">Arbaaz</Text>
+          </View>
+          <Text className="text-8xl font-sans text-blue">*</Text>
         </View>
-        <Text className="text-8xl font-sans text-blue">*</Text>
+        <DiaryCard message="" className="bg-light-blue mt-6" />
+        <View className="px-8 pt-8">
+          <Text className="font-sans text-3xl mb-4 font-bold text-black/50">Reminders</Text>
+          <View className="bg-light-blue/50 p-4 rounded-xl">
+            <Text className="text-4xl font-bold color-blue m-auto">+</Text>
+          </View>
         </View>
-      <DiaryCard message="" className="bg-light-blue mt-6"/>
-      <View className="px-8 pt-8">
-        <Text className="font-sans text-3xl mb-4 font-bold text-black/50">Reminders</Text>
-        <View className="bg-light-blue/50 p-4 rounded-xl">
-          <Text className="text-4xl font-bold color-blue m-auto">+</Text>
-        </View>
-      </View>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
-        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS"/>
+        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
+        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
+        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
+        <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
       </ScrollView>
-      </SafeAreaView>
+    </SafeAreaView>
   );
 }

@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS persons (
   name TEXT NOT NULL,
   birthdate DATE NOT NULL,
   relation TEXT NOT NULL,
-  speech_embedding BLOB NOT NULL,
+  audio BLOB NOT NULL,
   face_embedding BLOB,
   photo_data BLOB
 );
