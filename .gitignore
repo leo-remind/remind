@@ -37,3 +37,8 @@ env.json
 *.tsbuildinfo
 
 app-example
+
+# Expo
+.expo
+dist/
+web-build/
