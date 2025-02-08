@@ -1,10 +1,10 @@
 import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useState } from 'react';
-import { useSQLiteContext } from 'expo-sqlite/next';
-import * as faceapi from 'face-api.js';
+// import * as faceapi from 'face-api.js';
 import { getHighestMatchingFace } from '../utils/rag/rag';
+import ModelLoader from './ModelLoader';
 
-class MediaSync {
+export class MediaSync {
   constructor(db) {
     this.db = db;
     this.lastSyncTime = new Date();
@@ -202,69 +202,4 @@ class MediaSync {
       console.error('Photo sync failed:', error);
     }
   }
-}
-
-export default function MediaSyncComponent() {
-  const db = useSQLiteContext();
-  const [sync, setSync] = useState(null);
-
-  useEffect(() => {
-    async function initializeTables() {
-      // Create persons table
-      await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS persons (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NULL,
-          birthdate DATE NULL,
-          relation TEXT NULL,
-          audio BLOB NULL,
-          face_embedding BLOB,
-          photo_data BLOB
-        );
-      `);
-
-      // Create photos table
-      await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS photos (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          blob_data BLOB NOT NULL,
-          time_created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          caption TEXT NULL,
-          caption_vector BLOB NULL,
-          location_id INTEGER,
-          FOREIGN KEY (location_id) REFERENCES location (id)
-        );
-      `);
-
-      // Create person_photos table
-      await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS person_photos (
-          person_id INTEGER NOT NULL,
-          photo_id INTEGER NOT NULL,
-          PRIMARY KEY (person_id, photo_id),
-          FOREIGN KEY (person_id) REFERENCES persons(id),
-          FOREIGN KEY (photo_id) REFERENCES photos(id)
-        );
-      `);
-    }
-    
-    initializeTables().then(() => setSync(new MediaSync(db)));
-  }, [db]);
-
-  useEffect(() => {
-    if (!sync) return;
-
-    async function startSync() {
-      try {
-        await sync.initialize();
-        const interval = setInterval(() => sync.syncPhotos(), 5000);
-        return () => clearInterval(interval);
-      } catch (error) {
-        console.error('Failed to initialize media sync:', error);
-      }
-    }
-    startSync();
-  }, [sync]);
-
-  return null;
 }
