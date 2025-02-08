@@ -190,19 +190,14 @@ TaskManager.defineTask(
         const axios_output = await get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${long}`)
         // parse the json to get display name
         const place_name = axios_output.data.address.state_district;
-
-        console.log(place_name);
         
         const result = await db.runAsync(
           `INSERT INTO location (place_name, time_of_polling, lat, lon) VALUES ('${place_name}', CURRENT_TIMESTAMP, ${lat}, ${long})`
         );
 
-        console.log("Location Name saved to DB", result.lastInsertRowId);
+        console.log("Inserted location with ID: ", result.lastInsertRowId);
         
         const location_datas = await db.getAllAsync("SELECT * FROM location;");
-        
-        console.log("location data", location_datas);
-
       } else {
         console.log("No locations data available");
       }
