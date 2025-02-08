@@ -1,9 +1,9 @@
+import { Link } from 'expo-router';
 import React, { useState, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface DiaryCardProps {
   message: string;
-  onSeeMorePress?: () => void;
   className?: string;
   widthPercentage?: number;
   aspectRatio?: number;
@@ -11,7 +11,6 @@ interface DiaryCardProps {
 
 const DiaryCard: React.FC<DiaryCardProps> = ({
   message,
-  onSeeMorePress = () => alert('More details coming soon!'),
   className,
 }) => {
   const getDynamicDateRange = useMemo(() => {
@@ -139,9 +138,14 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
           {renderDateButtons()}
         </View>
 
-        <TouchableOpacity className="pl-2"
-          onPress={onSeeMorePress}
-        >
+        <Link href={{
+          pathname: `/calender/[date]`,
+          params: {
+            date: (new Date(selectedDateInfo.year, selectedDateInfo.month, selectedDateInfo.date, 0, 0, 0, 0)).getTime()
+          }
+
+        }} className="pl-2"
+        ><View>
           <Text className="text-4xl text-white font-serif mb-2">
             {selectedDateInfo.date}
             {getOrdinalSuffix(selectedDateInfo.date)}{' '}
@@ -150,7 +154,8 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
           <Text className="text-xl text-white/80">
             Memories to come here, Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sequi nulla velit labore! Sunt minus repellendus adipisci quidem? Harum,
           </Text>
-        </TouchableOpacity>
+          </View>
+        </Link>
 
         <TouchableOpacity
           className="w-full mb-6 text-left"
