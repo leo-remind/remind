@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-import { Tabs, Stack } from "expo-router";
-import React from "react";
-import { Platform, Image, View, Text } from "react-native";
-=======
 import { Tabs } from "expo-router";
 import React, { useState } from "react";
 import { Platform, Image, View, Text, TextInput } from "react-native";
->>>>>>> ac328b87aa8fdcd078a3460971c2c909a99b6098
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -33,26 +27,9 @@ export default function TabLayout() {
   const colorScheme = useColorScheme()
   const db = useSQLiteContext();
 
-  const [value,setValue] = useState("");
+  const [value, setValue] = useState("");
 
   return (
-<<<<<<< HEAD
-    <Stack>
-      <Stack.Screen name="(games)" options={{ headerShown: false }} />
-      <Stack.Screen 
-        name="memory"
-        options={{
-          presentation: 'modal',
-          title: 'Memory Game',
-          headerShown: true,
-          animation: 'slide_from_right'
-        }}
-      />
-      
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: "#dddddd",
-=======
     <View style={{ flex: 1 }}>
       {/* Search Input Container */}
       <View
@@ -88,7 +65,7 @@ export default function TabLayout() {
             onSubmitEditing={() => {
               chat(db, value)
             }}
-            onChangeText ={ newValue => setValue(newValue)}
+            onChangeText={newValue => setValue(newValue)}
             placeholder="Ask me anything!"
             style={{
               flex: 1,
@@ -104,7 +81,6 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "#000000",
->>>>>>> ac328b87aa8fdcd078a3460971c2c909a99b6098
           headerShown: false,
           headerStyle: {
             backgroundColor: "#f4511e",
@@ -115,14 +91,6 @@ export default function TabLayout() {
           },
           tabBarButton: HapticTab,
           tabBarBackground: TabBarBackground,
-<<<<<<< HEAD
-          tabBarStyle: Platform.select({
-            ios: {
-              position: "absolute",
-            },
-            default: {},
-          }),
-=======
           tabBarStyle: {
             ...Platform.select({
               ios: {
@@ -131,48 +99,32 @@ export default function TabLayout() {
             }),
             marginTop: 60, // Add top margin to account for search input
           },
->>>>>>> ac328b87aa8fdcd078a3460971c2c909a99b6098
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
             title: "Home",
-<<<<<<< HEAD
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="house.fill" color={color} />
-            ),
-=======
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
->>>>>>> ac328b87aa8fdcd078a3460971c2c909a99b6098
             headerStyle: { backgroundColor: "#f4511e" },
             headerTintColor: "#fff",
             headerTitleStyle: {
               fontWeight: "bold",
             },
-<<<<<<< HEAD
-            headerTitle: (props) => <LogoTitle {...props} />,
-=======
->>>>>>> ac328b87aa8fdcd078a3460971c2c909a99b6098
           }}
         />
         <Tabs.Screen
           name="memories/index"
           options={{
             title: "Memories",
-<<<<<<< HEAD
             tabBarIcon: ({ color }) => (
               <IconSymbol size={28} name="figure.strengthtraining.traditional" color={color} />
             ),
-=======
-            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="my-library-books" color={color} />,
->>>>>>> ac328b87aa8fdcd078a3460971c2c909a99b6098
           }}
         />
         <Tabs.Screen
           name="games"
           options={{
-<<<<<<< HEAD
             title: 'Games',
             tabBarIcon: ({ color }) => (
               <IconSymbol size={28} name="gamepad.fill" color={color} />
@@ -189,18 +141,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </Stack>
+    </View>
   );
 }
-=======
-            title: "Games",
-            tabBarIcon: ({ color }) => <MaterialIcons size={28} name="videogame-asset" color={color} />,
-          }}
-        />
-        
-      </Tabs>
-    </View>
-  )
-}
-
->>>>>>> ac328b87aa8fdcd078a3460971c2c909a99b6098
