@@ -24,7 +24,8 @@ interface SarvamEntry {
 export const addDummyData = async (db: SQLiteDatabase) => {
   try {
     console.log("adding dummy data: started");
-    await db.runAsync("DELETE FROM persons;")
+    await db.runAsync("DELETE FROM persons;");
+    await db.runAsync("DELETE FROM reminders;");
 
     const [{ localUri }] = await Asset.loadAsync(require("../assets/audio/arb.wav"))
     const [{ localUri: localUriImg }] = await Asset.loadAsync(require("../assets/images/group_14.png"))
@@ -80,7 +81,23 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?, ?),
     ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);
   `, audioData, imgData, audioData2, imgData);
+
+
+    const d1 = new Date();
+    d1.setHours(d1.getHours() + 1)
+    const d2 = new Date();
+    d2.setHours(d2.getHours() + 2)
+    const d3 = new Date();
+    d3.setHours(d3.getHours() + 3)
+    await db.runAsync(`
+    INSERT INTO reminders (reminder_time, recurrencetype, recurrenceon, recurrencefrequency, reminder_text, subtitle)
+    VALUES
+      (?, "daily", "someday", 1, "Take Your Meds!", "3 Pills of Paracetamol"),
+      (?, "daily", "someday", 1, "Call Your Mom.", "Talk about the hackaton you participated in"),
+      (?, "daily", "someday", 1, "Submit KRR Assignment", "Or you'll lose marks");
+    `, d1.toISOString(), d2.toISOString(), d3.toISOString())
     console.log("added dummy data");
+
   } catch (error) {
     console.log(error)
   }

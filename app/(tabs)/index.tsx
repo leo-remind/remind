@@ -25,12 +25,21 @@ export default function HomeScreen() {
   useEffect(() => {
     const fn = async () => {
       await addDummyData(db);
-      console.log("added data")
+      console.log("added dummy data")
     }
     fn()
   }, [])
 
   // <Button onPress={buttonPress} title="cooking"/>
+  const remindersRes: { 'id': number, 'reminder_time': string, 'reminder_text': string, 'subtitle': string }[] = db.getAllSync("SELECT * FROM reminders;")
+  const now = new Date()
+  const reminders = remindersRes.map(({ id, reminder_time, reminder_text, subtitle }) => {
+    const ts = new Date(reminder_time);
+    let minutes: number = Math.floor((ts.getTime() - now.getTime()) / 60000);
+    const hours = Math.floor(minutes / 60)
+    minutes = minutes % 60;
+    return { remg: hours == 0 ? `${minutes} mins` : `${hours} hours - ${minutes} mins`, text: reminder_text, subtitle: subtitle, id: id }
+  })
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -49,9 +58,18 @@ export default function HomeScreen() {
             <Text className="text-4xl font-bold color-blue m-auto">+</Text>
           </View>
         </View>
+        {
+          reminders.map(
+            ({ remg, text, subtitle, id }) => {
+              return (<ReminderItem key={id} timeLeft={remg} heading={text} subtitle={subtitle} />)
+            }
+          )
+        }
+        {/*
         <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
         <ReminderItem heading="Call you Mama" subtitle="You had a conversation with him about school" timeLeft="3 HOURS" />
         <ReminderItem heading="Eat your medicine" subtitle="5 pills of benydryl" timeLeft="3 HOURS" />
+        */}
       </ScrollView>
     </SafeAreaView>
   );

@@ -89,6 +89,7 @@ export async function migrateDbIfNeeded(db: SQLite.SQLiteDatabase) {
       recurrenceon TEXT NOT NULL,
       recurrencefrequency INTEGER NOT NULL,
       recurrenceends TIMESTAMP,
+      subtitle TEXT,
       reminder_text TEXT NOT NULL
     );`
   );
