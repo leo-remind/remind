@@ -10,8 +10,6 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useLayoutEffect, useState } from "react";
 import "react-native-reanimated";
 
-import * as TaskManager from "expo-task-manager";
-
 import get from "axios";
 
 import * as Location from "expo-location";
@@ -26,7 +24,7 @@ import { migrateDbIfNeeded } from "@/utils/database";
 import "../global.css";
 
 import { Button, View } from "react-native";
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from "expo-file-system";
 import {
   AudioRecording,
   ExpoAudioStreamModule,
@@ -34,15 +32,19 @@ import {
   useSharedAudioRecorder,
   AudioDataEvent,
 } from "@siteed/expo-audio-stream";
+import MemoryCreator from "@/components/memoryCreator";
+import * as BackgroundFetch from "expo-background-fetch";
+import * as TaskManager from "expo-task-manager";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
 
 const LOCATION_TRACKING = "location-tracking";
 
 var l1;
 var l2;
+
+var callCounter = 0;
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -73,6 +75,7 @@ function ChildComponent() {
     useSharedAudioRecorder();
 
   const [audioResult, setAudioResult] = useState<AudioRecording | null>(null);
+  const [locationStarted, setLocationStarted] = React.useState(false);
 
   const handleStart = async () => {
     const { status } = await ExpoAudioStreamModule.requestPermissionsAsync();
@@ -85,16 +88,17 @@ function ChildComponent() {
       onAudioStream: async (adEvent: AudioDataEvent) => {
         console.log(adEvent);
         // adEvent.data is base64 encoded string representing the audio buffer.
-        
-        const audioDataB642 = await FileSystem.readAsStringAsync(adEvent.fileUri, {
-          encoding: FileSystem.EncodingType.Base64
-        });
-    
+
+        const audioDataB642 = await FileSystem.readAsStringAsync(
+          adEvent.fileUri,
+          {
+            encoding: FileSystem.EncodingType.Base64,
+          }
+        );
+
         const audioData2 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
-        
-        // Call arbaaz code 
 
-
+        // Call arbaaz code
       },
     });
     return startResult;
@@ -105,21 +109,18 @@ function ChildComponent() {
     setAudioResult(result);
   };
 
-    const [locationStarted, setLocationStarted] = React.useState(false);
-  
-    const startLocationTracking = async () => {
-      await Location.startLocationUpdatesAsync(LOCATION_TRACKING, {
-        accuracy: Location.Accuracy.Highest,
-        timeInterval: 5000,
-        distanceInterval: 0,
-      });
-      const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-        LOCATION_TRACKING
-      );
-      setLocationStarted(hasStarted);
-      console.log("tracking started?", hasStarted);
-    };
-  
+  const startLocationTracking = async () => {
+    await Location.startLocationUpdatesAsync(LOCATION_TRACKING, {
+      accuracy: Location.Accuracy.Highest,
+      timeInterval: 5000,
+      distanceInterval: 0,
+    });
+    const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+      LOCATION_TRACKING
+    );
+    setLocationStarted(hasStarted);
+    console.log("tracking started?", hasStarted);
+  };
 
   const startLocation = () => {
     startLocationTracking();
@@ -133,7 +134,7 @@ function ChildComponent() {
       }
     });
   };
-  
+
   useLayoutEffect(() => {
     handleStart();
 
@@ -149,10 +150,9 @@ function ChildComponent() {
 
     config();
 
-    if (!locationStarted) { 
+    if (!locationStarted) {
       startLocation();
     }
-
   }, []);
 
   return (
@@ -166,10 +166,21 @@ function ChildComponent() {
   );
 }
 
-
 TaskManager.defineTask(
   LOCATION_TRACKING,
   async ({ data, error }: { data: any; error: any }) => {
+
+    callCounter++;
+
+    console.log(callCounter);
+    
+    if (callCounter % 720 == 0) {
+      console.log("Running memory tasks");
+
+      const db = await openDatabaseAsync("remind_db.sqlite");
+
+    }
+
     if (error) {
       console.log("LOCATION_TRACKING task ERROR:", error);
       return;
@@ -186,18 +197,21 @@ TaskManager.defineTask(
         const db = await openDatabaseAsync("remind_db.sqlite");
         // query nominatim to get district
         // https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=-34.44076&lon=-58.70521
-        
-        const axios_output = await get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${long}`)
+
+        const axios_output = await get(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${long}`
+        );
         // parse the json to get display name
         const place_name = axios_output.data.address.state_district;
-        
+
         const result = await db.runAsync(
           `INSERT INTO location (place_name, time_of_polling, lat, lon) VALUES ('${place_name}', CURRENT_TIMESTAMP, ${lat}, ${long})`
         );
 
         console.log("Inserted location with ID: ", result.lastInsertRowId);
-        
+
         const location_datas = await db.getAllAsync("SELECT * FROM location;");
+
       } else {
         console.log("No locations data available");
       }
