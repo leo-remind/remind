@@ -25,10 +25,7 @@
     "date-fns": "^4.1.0",
     "expo": "~52.0.31",
     "expo-asset": "~11.0.3",
-<<<<<<< HEAD
-=======
     "expo-background-fetch": "^13.0.5",
->>>>>>> 3d90f25b3b14d293ea748d8caebbe44e55c24961
     "expo-blur": "~14.0.3",
     "expo-constants": "~17.0.5",
     "expo-file-system": "~18.0.10",
