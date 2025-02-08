@@ -2,40 +2,46 @@ import { View, Text, SafeAreaView, ScrollView } from "react-native"
 import { StreakCard } from "@/components/StreakCard"
 import { GameCard } from "@/components/GameCard"
 import { useEffect, useState } from "react"
+import React from "react";
+import { useRouter } from "expo-router";
 
 export default function DailyPracticeScreen() {
-  const [streak, setStreak] = useState(10);
-  const [playedToday, setPlayedToday] = useState(false);
+  const router = useRouter()
+  const [streak, setStreak] = useState(10)
+  const [playedToday, setPlayedToday] = useState(false)
 
   useEffect(() => {
-    loadStreak();
-  }, []);
+    loadStreak()
+  }, [])
 
   useEffect(() => {
-    incrementStreak();
-  }, [playedToday]);
+    incrementStreak()
+  }, [playedToday])
 
   const loadStreak = async () => {
     try {
       const storedStreak = "1" // get from db
       if (storedStreak !== null) {
-        setStreak(parseInt(storedStreak));
+        setStreak(parseInt(storedStreak))
       }
     } catch (error) {
-      console.error('Error loading streak:', error);
+      console.error('Error loading streak:', error)
     }
-  };
+  }
 
   const incrementStreak = async () => {
     try {
-      const newStreak = streak + 1;
+      const newStreak = streak + 1
       // store streak
-      setStreak(newStreak);
+      setStreak(newStreak)
     } catch (error) {
-      console.error('Error saving streak:', error);
+      console.error('Error saving streak:', error)
     }
-  };
+  }
 
+  const handleGameComplete = () => {
+    setPlayedToday(true)
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -50,12 +56,16 @@ export default function DailyPracticeScreen() {
 
       <ScrollView>
         <GameCard
-          title="Memory Game 1"
+          title="Memory Game"
           imageUrl={require("../../assets/images/group_14.png")}
-          onPress={() => { }}
+          gameType="memory"
         />
 
-        <GameCard title="Game 2" imageUrl={require("../../assets/images/group_14.png")} onPress={() => { }} />
+        <GameCard 
+          title="Game 2" 
+          imageUrl={require("../../assets/images/group_14.png")} 
+          gameType="other"
+        />
       </ScrollView>
     </SafeAreaView>
   )

@@ -168,8 +168,8 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
       w-[90%] max-w-2xl min-h-96
       ${className || ''}
     `}>
-      <View className="flex flex-col p-4">
-        <View className="flex flex-row items-center justify-center w-full h-16 
+    <View className="flex flex-col p-4">
+        <View className="flex flex-row items-center justify-center w-full h-12 
                       bg-white/50 rounded-full mb-4">
           {renderDateButtons()}
         </View>

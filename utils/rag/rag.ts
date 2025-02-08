@@ -27,18 +27,21 @@ interface VectorResponse {
 const openai = new OpenAI({
         apiKey: env.OPENAI_API_KEY
     });
-const THRESHOLD =  0.5;
 
-export async function chat(db : SQLiteDatabase,query: string)  : Promise<string>{
+export async function chat(db : SQLiteDatabase,query: string)  : Promise<Object>{
     let queryEmbeddings: Float32Array = await createTextEmbedding(query);
 
-    let images = await retrieveRelevantImages(db, queryEmbeddings);
+    //let images = await retrieveRelevantImages(db, queryEmbeddings);
+    console.log("yaya")
     let conversations = await retrieveRelevantConversations(db, queryEmbeddings);
-    let peopleIds = getRelevantPeople(db, conversations);
+    //let peopleIds = getRelevantPeople(db, conversations);
 
     let response = await generate(db,query, conversations, 15);
-    console.log("got response")
-    return response;
+    return {
+        answer: response,
+        photos: [],
+        people: []
+    };
 }
 
 function cosineSimilarity(vecA: Float32Array, vecB: Float32Array) {
@@ -65,7 +68,7 @@ async function retrieveRelevantImages(db: SQLiteDatabase, queryEmbedding: Float3
         }))
     );
 
-    return sortedRows.sort((a, b) => b.similarity - a.similarity).filter((num) => num.similarity > THRESHOLD);
+    return sortedRows.sort((a, b) => b.similarity - a.similarity).filter((num) => num.similarity);
 }
 
 async function retrieveRelevantConversations(db: SQLiteDatabase, queryEmbedding: Float32Array): Promise<Array<VectorResponse>> {
@@ -83,8 +86,7 @@ async function retrieveRelevantConversations(db: SQLiteDatabase, queryEmbedding:
             ) 
         }))
     );
-
-    return sortedRows.sort((a, b) => b.similarity - a.similarity).filter((num) => num.similarity > THRESHOLD);
+    return sortedRows.sort((a, b) => b.similarity - a.similarity).filter((num) => num.similarity );
 }
 
 export async function getHighestMatchingFace(db: SQLiteDatabase, targetFaceEmbedding: Float32Array, threshold: number): Promise<number|null> {
@@ -178,7 +180,6 @@ export async function createImageEmbedding(image: Blob): Promise<Float32Array> {
 
 export async function createTextEmbedding(text: string): Promise<Float32Array> {
     console.log("embedding: " + text);
-    try {
     const embedding = await openai.embeddings.create({
         model: "text-embedding-3-small",
         input: text,
@@ -187,8 +188,4 @@ export async function createTextEmbedding(text: string): Promise<Float32Array> {
     console.log("done")
 
     return new Float32Array(embedding.data[0].embedding);
-} catch (err) {
-    console.log(err)
-    console.log("this is so sad")
-}
 }

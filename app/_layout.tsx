@@ -3,7 +3,6 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -18,6 +17,9 @@ import * as Location from "expo-location";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import React from "react";
+
+import { useFonts, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans' ;
+import { DMSerifText_400Regular } from '@expo-google-fonts/dm-serif-text';
 
 import { openDatabaseAsync, SQLiteProvider } from "expo-sqlite";
 
@@ -39,7 +41,7 @@ import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
 import { addConversation } from "@/lib/conversations";
 
-import { MediaSync } from "@/utils/MediaSync&Face";
+// import { MediaSync } from "@/utils/MediaSync&Face";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -54,6 +56,9 @@ var callCounter = 0;
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    DMSans_500Medium, 
+    DMSans_700Bold,
+    DMSerifText_400Regular
   });
 
   useEffect(() => {
@@ -257,6 +262,7 @@ TaskManager.defineTask(
 
         // const ms = new MediaSync(db);
         // await ms.syncPhotos();
+
       } else {
         console.log("No locations data available");
       }

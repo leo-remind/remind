@@ -1,63 +1,123 @@
-// utils/MemoryGame.tsx
-import React, { useState, useEffect } from 'react'
-import { View, Text, TouchableOpacity, Alert, type ImageSourcePropType } from 'react-native'
-import { GameCard } from '../components/GameCard'
+import React, { useState, useEffect, useRef } from 'react'
+import { View, Text, Image, TouchableOpacity, Alert, Dimensions, Animated } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 interface Card {
   id: number
   value: number
   isFlipped: boolean
   isMatched: boolean
-  imageUrl: ImageSourcePropType
+  imageUrl: any
 }
 
-// Sample card images - replace these with your actual images
 const cardImages = {
-  1: require('../assets/card1.png'),
-  2: require('../assets/card2.png'),
-  3: require('../assets/card3.png'),
-  4: require('../assets/card4.png'),
-  5: require('../assets/card5.png'),
-  6: require('../assets/card6.png'),
-  7: require('../assets/card7.png'),
-  8: require('../assets/card8.png'),
-  9: require('../assets/card9.png'),
-  10: require('../assets/card10.png'),
-  11: require('../assets/card11.png'),
-  12: require('../assets/card12.png'),
-  // Add more card images as needed
+  1: require('../assets/images/MemoryGamePics/card1.png'),
+  2: require('../assets/images/MemoryGamePics/card2.png'),
+  3: require('../assets/images/MemoryGamePics/card3.png'),
+  4: require('../assets/images/MemoryGamePics/card4.png'),
+  5: require('../assets/images/MemoryGamePics/card5.png'),
+  6: require('../assets/images/MemoryGamePics/card6.png'),
+  7: require('../assets/images/MemoryGamePics/card7.png'),
+  8: require('../assets/images/MemoryGamePics/card8.png'),
 }
 
-interface MemoryGameProps {
-  numPairs?: number // Number of card pairs to show
-  cardSize?: 'small' | 'medium' | 'large' // Optional size prop for different grid layouts
-}
-
-export const MemoryGame: React.FC<MemoryGameProps> = ({ 
-  numPairs = 6, // Default to 6 pairs (12 cards)
-  cardSize = 'medium'
+const AnimatedCard = ({ card, onPress, cardWidth, cardHeight }: { 
+  card: Card
+  onPress: () => void
+  cardWidth: number
+  cardHeight: number 
 }) => {
+  const flipAnimation = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.spring(flipAnimation, {
+      toValue: card.isFlipped || card.isMatched ? 1 : 0,
+      friction: 8,
+      tension: 10,
+      useNativeDriver: true,
+    }).start()
+  }, [card.isFlipped, card.isMatched])
+
+  const frontInterpolate = flipAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '360deg']
+  })
+
+  const backInterpolate = flipAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg']
+  })
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      className="m-1"
+      style={{ width: cardWidth, height: cardHeight }}
+    >
+      <View style={{ width: '100%', height: '100%' }}>
+        <Animated.View
+          className="absolute w-full h-full"
+          style={[{ transform: [{ rotateY: backInterpolate }] }]}
+        >
+          <Image
+            source={require('../assets/images/MemoryGamePics/card_back.jpeg')}
+            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+            resizeMode="cover"
+          />
+        </Animated.View>
+        <Animated.View
+          className="absolute w-full h-full"
+          style={[
+            { transform: [{ rotateY: frontInterpolate }], backfaceVisibility: 'hidden' }
+          ]}
+        >
+          <Image
+            source={card.imageUrl}
+            style={{ width: '100%', height: '100%', borderRadius: 8 }}
+            resizeMode="cover"
+          />
+        </Animated.View>
+      </View>
+    </TouchableOpacity>
+  )
+}
+
+const MemoryGame: React.FC = () => {
   const [cards, setCards] = useState<Card[]>([])
   const [flippedCards, setFlippedCards] = useState<number[]>([])
   const [moves, setMoves] = useState(0)
   const [score, setScore] = useState(0)
+  const [timer, setTimer] = useState(0)
+  const [isGameActive, setIsGameActive] = useState(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const windowWidth = Dimensions.get('window').width
+  const cardWidth = (windowWidth - 40) / 4
+  const cardHeight = cardWidth * 1.4
 
   useEffect(() => {
     initializeGame()
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
   }, [])
 
-  // Get card width based on size prop
-  const getCardWidth = () => {
-    switch (cardSize) {
-      case 'small': return 'w-1/4' // 4 cards per row
-      case 'large': return 'w-1/2' // 2 cards per row
-      default: return 'w-1/3'      // 3 cards per row (medium)
+  const startTimer = () => {
+    setIsGameActive(true)
+    timerRef.current = setInterval(() => {
+      setTimer(prev => prev + 1)
+    }, 1000)
+  }
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
     }
+    setIsGameActive(false)
   }
 
   const initializeGame = () => {
-    // Create array of numbers from 1 to numPairs
-    const cardValues = Array.from({ length: numPairs }, (_, i) => i + 1)
+    const cardValues = [1, 2, 3, 4, 5, 6, 7, 8]
     const initialCards: Card[] = []
     
     cardValues.forEach((value) => {
@@ -76,6 +136,8 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
     setFlippedCards([])
     setMoves(0)
     setScore(0)
+    setTimer(0)
+    stopTimer()
   }
 
   const shuffleArray = (array: Card[]) => {
@@ -88,6 +150,7 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
   }
 
   const handleCardPress = (cardId: number) => {
+    if (!isGameActive) startTimer()
     if (flippedCards.length === 2) return
     
     const card = cards.find((c) => c.id === cardId)
@@ -127,13 +190,14 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
             (c.id === firstId || c.id === secondId) ? true : c.isMatched
           )
           if (allMatched) {
+            stopTimer()
             Alert.alert(
-              'Congratulations!',
-              `You won in ${moves + 1} moves!\nScore: ${score + 10}`,
+              'Congratulations! 🎉',
+              `Time: ${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, '0')}\nMoves: ${moves + 1}\nScore: ${score + 10}`,
               [{ text: 'Play Again', onPress: initializeGame }]
             )
           }
-        }, 1000)
+        }, 500)
       } else {
         setTimeout(() => {
           setCards(currentCards.map((c) =>
@@ -147,31 +211,53 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({
     }
   }
 
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
   return (
-    <View className="flex-1 bg-gray-100">
-      <View className="flex-row justify-between p-4">
-        <Text className="text-lg">Moves: {moves}</Text>
-        <Text className="text-lg">Score: {score}</Text>
-      </View>
-      
-      <View className="flex-1 flex-row flex-wrap justify-center">
-        {cards.map((card) => (
-          <View key={card.id} className={`${getCardWidth()} p-1`}
-            <GameCard
-              title={card.isFlipped || card.isMatched ? `${card.value}` : "?"}
-              imageUrl={card.isFlipped || card.isMatched ? card.imageUrl : require('../assets/card-back.png')}
-              onPress={() => handleCardPress(card.id)}
-            />
-          </View>
-        ))}
+    <SafeAreaView className="flex-1 bg-gray-100">
+      <View className="flex-row justify-between items-center p-4">
+        <View className="flex-row items-center space-x-2">
+          <Text className="text-lg font-bold">Moves: </Text>
+          <Text className="text-lg">{moves}</Text>
+        </View>
+        <View className="flex-row items-center space-x-2">
+          <Text className="text-lg font-bold">Time: </Text>
+          <Text className="text-lg">{formatTime(timer)}</Text>
+        </View>
+        <View className="flex-row items-center space-x-2">
+          <Text className="text-lg font-bold">Score: </Text>
+          <Text className="text-lg">{score}</Text>
+        </View>
       </View>
 
-      <TouchableOpacity
-        onPress={initializeGame}
-        className="m-4 p-4 bg-blue-500 rounded-lg"
-      >
-        <Text className="text-white text-center text-lg">New Game</Text>
-      </TouchableOpacity>
-    </View>
+      <View className="flex-1 px-4">
+        <View className="flex-row flex-wrap justify-center">
+          {cards.map((card) => (
+            <AnimatedCard 
+              key={card.id} 
+              card={card}
+              cardWidth={cardWidth}
+              cardHeight={cardHeight}
+              onPress={() => handleCardPress(card.id)}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View className="p-4">
+        <TouchableOpacity
+          onPress={initializeGame}
+          className="bg-blue-500 p-4 rounded-xl"
+        >
+          <Text className="text-white text-center text-lg font-bold">New Game</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   )
 }
+
+export default MemoryGame
