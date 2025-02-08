@@ -2,7 +2,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useState } from 'react';
 // import * as faceapi from 'face-api.js';
 import { getHighestMatchingFace } from '../utils/rag/rag';
-// import ModelLoader from './ModelLoader';
+import ModelLoader from './ModelLoader';
 
 export class MediaSync {
   constructor(db) {
@@ -92,7 +92,7 @@ export class MediaSync {
   }
 
   async detectFacesAndMatch(imageBlob) {
-    const img = await faceapi.bufferToImage(imageBlob);
+    // imageBlob goes to python backend for face detection and embedding return.
     
     const detections = await faceapi
       .detectAllFaces(img)
@@ -141,6 +141,7 @@ export class MediaSync {
       const assetInfo = await MediaLibrary.getAssetInfoAsync(asset);
       const response = await fetch(assetInfo.uri);
       const blob = await response.blob();
+
       const creationTime = new Date(asset.creationTime).toISOString();
       const locationId = await this.findNearestLocation(creationTime);
 
@@ -195,7 +196,8 @@ export class MediaSync {
     try {
       const assets = await this.getNewPhotos();
       for (const asset of assets.assets) {
-        await this.processPhoto(asset);
+        console.log("Got new photos!");
+        // await this.processPhoto(asset);
       }
       this.lastSyncTime = new Date();
     } catch (error) {

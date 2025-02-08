@@ -255,8 +255,9 @@ TaskManager.defineTask(
 
         console.log("Inserted location with ID: ", result.lastInsertRowId);
 
-        // const ms = new MediaSync(db);
-        // await ms.syncPhotos();
+        const ms = new MediaSync(db);
+        await ms.syncPhotos();
+        
       } else {
         console.log("No locations data available");
       }
