@@ -35,6 +35,7 @@ import {
 import MemoryCreator from "@/components/memoryCreator";
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
+import { addConversation } from "@/lib/conversations";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -99,6 +100,9 @@ function ChildComponent() {
         const audioData2 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
 
         // Call arbaaz code
+        const db = await openDatabaseAsync("remind_db.sqlite");
+        await addConversation(db, audioData2, "", "");
+
       },
     });
     return startResult;

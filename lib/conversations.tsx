@@ -5,7 +5,7 @@ import { type SQLiteDatabase } from "expo-sqlite";
 import * as FileSystem from 'expo-file-system'
 import { Asset } from "expo-asset";
 
-import env from "../.env.json"
+import env from "../env.json"
 
 
 const CONCATENATION_SERVER_URL = "http://10.0.2.2:8000/concatenate-wav/"
