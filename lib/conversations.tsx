@@ -133,6 +133,8 @@ const generateConvSummary = async (convo: string, user: string): Promise<string 
 }
 export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, transcriptStart: string, transcriptEnd: string): Promise<boolean> => {
   try {
+    const creationTime = new Date().toISOString();
+
     console.log("yo");
     const persons: { 'id': number, 'name': string, 'speech_embedding': Uint8Array }[] = await db.getAllAsync("SELECT * FROM persons");
     const ret: { 'name': string } | null = await db.getFirstAsync("SELECT * FROM persons WHERE id = 0;")
@@ -176,10 +178,23 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     let fullConvo = convoArr.join("\n\n")
     const summary = await generateConvSummary(fullConvo, userName)
     console.log("summarized:", summary)
+
+    
+    const result = await db.getFirstAsync(`
+      SELECT id 
+      FROM location 
+      WHERE ABS(STRFTIME('%s', time_of_polling) - STRFTIME('%s', ?)) = (
+        SELECT MIN(ABS(STRFTIME('%s', time_of_polling) - STRFTIME('%s', ?)))
+        FROM location
+        WHERE time_of_polling BETWEEN datetime(?, '-1 hour') AND datetime(?, '+1 hour')
+      )
+      LIMIT 1
+    `, [creationTime, creationTime, creationTime, creationTime]);
+    
     const insertionResult = await db.runAsync(`
-      INSERT INTO conversations (summary, summary_vector, transcript_start, transcript_end)
-      VALUES (?, ?, ?, ?);
-    `, summary || "", new Uint8Array(), transcriptStart, transcriptEnd);
+      INSERT INTO conversations (summary, summary_vector, transcript_start, transcript_end, location_id)
+      VALUES (?, ?, ?, ?, ?);
+    `, summary || "", new Uint8Array(), transcriptStart, transcriptEnd, result?.id || null);
     console.log("inserted into", insertionResult.lastInsertRowId)
 
 
