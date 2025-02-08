@@ -15,8 +15,6 @@ import React from "react";
 
 import {
   SQLiteProvider,
-  useSQLiteContext,
-  type SQLiteDatabase,
 } from "expo-sqlite";
 
 import {
