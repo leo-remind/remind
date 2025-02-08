@@ -24,14 +24,7 @@ function LogoTitle(props: any) {
 }
 
 export default function TabLayout() {
-<<<<<<< HEAD
   const [value,setValue] = useState("");
-=======
-  const colorScheme = useColorScheme()
-  const db = useSQLiteContext();
-
-  const [value, setValue] = useState("");
->>>>>>> cc393054651eceaa1979a74b5ea46b77f90bf968
 
   return (
     <View style={{ flex: 1 }}>
