@@ -1,16 +1,26 @@
 import React from "react"
-import { View, Text, Image, type ImageSourcePropType, TouchableOpacity } from "react-native"
+import { View, Text, Image, TouchableOpacity } from "react-native"
+import type { ImageSourcePropType } from "react-native"
+import { useNavigation } from "@react-navigation/native"
 
 interface GameCardProps {
   title: string
   imageUrl: ImageSourcePropType
-  onPress: () => void
+  gameType: string
 }
 
-export const GameCard: React.FC<GameCardProps> = ({ title, imageUrl, onPress }) => {
+export const GameCard: React.FC<GameCardProps> = ({ title, imageUrl, gameType }) => {
+  const navigation = useNavigation()
+
+  const handlePress = () => {
+    if (gameType === 'memory') {
+      navigation.navigate('MemoryGame')
+    }
+  }
+
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={handlePress}
       className="h-[200px] rounded-2xl overflow-hidden mx-4 my-2"
     >
       <Image source={imageUrl} className="object-cover" style={{ height: "100%", width: "100%" }} />
