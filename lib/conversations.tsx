@@ -8,8 +8,8 @@ import { Asset } from "expo-asset";
 import env from "../env.json"
 
 
-// const CONCATENATION_SERVER_URL = "https://remind-backend-cl32.onrender.com/concatenate-wav/"
-const CONCATENATION_SERVER_URL = "http://10.0.2.2:8000/concatenate-wav/"
+const CONCATENATION_SERVER_URL = "https://remind-backend-cl32.onrender.com/concatenate-wav/"
+// const CONCATENATION_SERVER_URL = "http://10.0.2.2:8000/concatenate-wav/"
 const openai = new OpenAI({
   apiKey: env.OPENAI_API_KEY
 })

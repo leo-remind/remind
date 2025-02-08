@@ -36,7 +36,9 @@ import {
   useSharedAudioRecorder,
   AudioDataEvent,
 } from "@siteed/expo-audio-stream";
-import MemoryCreator from "@/components/memoryCreator";
+
+import { MemoryCreator } from "@/utils/MemoryCreator";
+
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
 import { addConversation } from "@/lib/conversations";
@@ -225,10 +227,13 @@ TaskManager.defineTask(
 
     console.log(callCounter);
 
-    if (callCounter % 720 == 0) {
+    if (callCounter % 1 == 0) {
       console.log("Running memory tasks");
 
       const db = await openDatabaseAsync("remind_db.sqlite");
+
+      const mcObject = new MemoryCreator();
+      mcObject.createMemories(db);
     }
 
     if (error) {
