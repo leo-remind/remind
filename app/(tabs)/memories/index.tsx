@@ -1,9 +1,10 @@
 import DiaryCard from "@/components/ui/memories/DiaryCard";
-import { StyleSheet, Image, Platform, View, Text, SafeAreaView } from "react-native";
+import { StyleSheet, Image, Platform, View, Text, SafeAreaView , ScrollView} from "react-native";
 
 export default function MemoriesScreen() {
-  return <SafeAreaView className="flex-1 bg-white overflow-y-auto">
-    <View className="flex-row justify-between items-start px-8 pt-8 ">
+  return <SafeAreaView className="flex-1 bg-white">
+    <ScrollView>
+    <View className="flex-row justify-between items-start px-8 pt-8 mt-2">
       <View>
         <Text className="text-4xl font-sans">Your</Text>
         <Text className="text-4xl font-sans text-orange font-bold">Memories</Text>
@@ -26,6 +27,7 @@ export default function MemoriesScreen() {
       <Text className="underline text-orange font-sans text-xl">List All</Text>
     </View>
     <People />
+    </ScrollView>
 
   </SafeAreaView>
 }
@@ -33,8 +35,7 @@ export default function MemoriesScreen() {
 function Trips() {
   return <View className="bg-white overflow-y-auto">
     <TripCarousel items={[
-      { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Mohali", "subheading": "19th-20th Feb" },
-      { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Bangcok", "subheading": "19th-20th Feb" },
+      { "src": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", "heading": "Mohalsssi", "subheading": "19th-20th Feb" },
       { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Bangcok", "subheading": "19th-20th Feb" },
       { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Bangcok", "subheading": "19th-20th Feb" },
     ]} />
@@ -74,7 +75,7 @@ const PeopleGrid: React.FC<PeopleGridProps> = ({
   };
 
   return (
-    <View className="flex flex-wrap gap-8 p-8 m-auto flex-row">
+    <View className="flex flex-wrap gap-8 flex-row w-96 justify-center">
       {profiles.map((profile, index) => (
         <View key={index} className="flex flex-col items-center">
           <View
@@ -85,7 +86,7 @@ const PeopleGrid: React.FC<PeopleGridProps> = ({
             `}
           >
             <Image
-              source={{ uri: profile.imageUrl || "/api/placeholder/96/96" }}
+              source={{ uri: profile.imageUrl}}
               alt={profile.text}
               className="w-full h-full object-cover"
             />
@@ -111,7 +112,7 @@ const TripCarousel: React.FC<TripCarouselProps> = ({ items }) => {
   if (!items || items.length === 0) return null;
 
   return (
-    <View className="w-full overflow-x-auto overflow-y-none pl-2">
+    <ScrollView horizontal={true} className="w-full overflow-x-auto overflow-y-none pl-2">
       <View className="flex gap-4 p-4 flex-row">
         {items.map((item, index) => (
           <View
@@ -119,22 +120,25 @@ const TripCarousel: React.FC<TripCarouselProps> = ({ items }) => {
             className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
           >
             <Image
-              source={item.src}
+              source={{uri:item.src}}
               alt={item.heading}
-              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                width : "100%",
+                height: "100%",
+                objectFit: "cover"
+              }}
             />
-            <View className="absolute inset-0 bg-linear-to-t from-black to-black" />
-            <View className="absolute bottom-0 left-0 p-4 text-white">
-              <Text className="text-3xl font-bold text-white font-sans">
+            <View className="absolute bottom-0 left-0 p-4">
+              <Text className="text-3xl font-bold font-sans text-white">
                 {item.heading}
               </Text>
-              <Text className="text-lg text-white font-sans">
+              <Text className="text-lg  font-sans text-white">
                 {item.subheading}
               </Text>
             </View>
           </View>
         ))}
       </View>
-    </View>
+    </ScrollView>
   );
 };

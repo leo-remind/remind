@@ -1,4 +1,3 @@
-
 import { StyleSheet, Image, Platform, View, Text } from "react-native";
 import React from 'react';
 
@@ -25,9 +24,9 @@ const PeopleGrid: React.FC<PeopleGridProps> = ({
   };
 
   return (
-    <View className="flex flex-wrap gap-8 p-4">
+    <View className="flex flex-row flex-wrap gap-8 p-4">
       {profiles.map((profile, index) => (
-        <View key={index} className="flex flex-col items-center">
+        <View key={index} className="flex-1 flex-col items-center">
           <View 
             className={`
               rounded-full 

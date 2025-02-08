@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 
 import "../../global.css";
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
 interface Conversation {
   id: number;
@@ -13,7 +14,8 @@ interface Conversation {
 }
 
 const CalendarScreen: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const { date } =  useLocalSearchParams();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date(parseFloat(date)));
   const [showMonthView, setShowMonthView] = useState<boolean>(false);
 
   const currentMonth = useMemo(() => format(selectedDate, 'MMMM yyyy'), [selectedDate]);
