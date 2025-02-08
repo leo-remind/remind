@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isToday, isAfter, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+// import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 
 import "../../global.css";
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -15,7 +15,8 @@ interface Conversation {
 
 const CalendarScreen: React.FC = () => {
   const { date } =  useLocalSearchParams();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(parseFloat(date)));
+  const parsedDate = Array.isArray(date) ? date[0] : date;
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date(parseFloat(parsedDate)));
   const [showMonthView, setShowMonthView] = useState<boolean>(false);
 
   const currentMonth = useMemo(() => format(selectedDate, 'MMMM yyyy'), [selectedDate]);
@@ -161,7 +162,7 @@ const CalendarScreen: React.FC = () => {
           onPress={handlePreviousMonth}
           className="p-2 hover:bg-gray-100 rounded-full"
         >
-          <ChevronLeft className="w-6 h-6" />
+          {/* <ChevronLeft className="w-6 h-6" /> */}
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleMonthPress}
@@ -173,7 +174,7 @@ const CalendarScreen: React.FC = () => {
           onPress={handleNextMonth}
           className="p-2 hover:bg-gray-100 rounded-full"
         >
-          <ChevronRight className="w-6 h-6" />
+          {/* <ChevronRight className="w-6 h-6" /> */}
         </TouchableOpacity>
       </View>
 
