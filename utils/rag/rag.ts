@@ -29,14 +29,15 @@ const openai = new OpenAI({
     });
 const THRESHOLD =  0.5;
 
-export async function chat(db : SQLiteDatabase,query: string) {
+export async function chat(db : SQLiteDatabase,query: string)  : Promise<string>{
     let queryEmbeddings: Float32Array = await createTextEmbedding(query);
 
     let images = await retrieveRelevantImages(db, queryEmbeddings);
     let conversations = await retrieveRelevantConversations(db, queryEmbeddings);
     let peopleIds = getRelevantPeople(db, conversations);
 
-    let response = await generate(db,query, conversations, 10);
+    let response = await generate(db,query, conversations, 15);
+    console.log("got response")
     return response;
 }
 
@@ -124,7 +125,6 @@ async function getRelevantPeople(db: SQLiteDatabase, conversations: Array<Vector
 }
 
 async function generate(db:SQLiteDatabase, query: string, conversations: Array<VectorResponse>, context: number): Promise<string> {
-    try {
     console.log("trying")
     const relevantConversations = conversations.slice(0, context);
     const conversationIds = relevantConversations.map(conv => conv.id);
@@ -145,16 +145,14 @@ async function generate(db:SQLiteDatabase, query: string, conversations: Array<V
     `);
     
     const contextString = conversationData
-        .map(conv => `Summary: ${conv.summary}`)
+        .map(conv => `${conv.summary}\n`)
         .join('\n');
-   console.log(contextString) ;
-    
     const completion = await openai.chat.completions.create({
         model: "gpt-4-turbo-preview",
         messages: [
             {
                 role: "system",
-                content: "You are a helpful assistant that answers questions based on provided conversation histories. Use the context provided to give accurate and relevant answers."
+                content: "You are a helpful assistant that answers questions based on provided conversation histories. Use the context provided to give accurate and relevant answers. Ensure that your replies are concise and in one paragraph"
             },
             {
                 role: "user",
@@ -165,12 +163,7 @@ async function generate(db:SQLiteDatabase, query: string, conversations: Array<V
         max_tokens: 500
     });
 
-    console.log("yummy")
-    console.log(completion.choices[0].message)
     return completion.choices[0].message.content || "I couldn't generate a response based on the available context.";
-} catch (err) {
-    console.log(err)
-}
 }
 
 export async function createImageEmbedding(image: Blob): Promise<Float32Array> {

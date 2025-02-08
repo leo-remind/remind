@@ -24,7 +24,6 @@ export async function insertDummyConversations(db: SQLiteDatabase) {
         { summary: "Deep dive into AI-powered recommendation systems used in e-commerce, entertainment, and social media, analyzing techniques like collaborative filtering and content-based recommendations.", transcript_start: "2025-02-15 16:45:00", transcript_end: "2025-02-15 17:30:00", location_id: 5 }
     ];
 
-    /** 
     console.log("start to cook")
     for (const convo of dummyConversations) {
         try {
@@ -37,9 +36,10 @@ export async function insertDummyConversations(db: SQLiteDatabase) {
         } catch (err) {
             console.log(err)
         }
-    }*/
+    }
     
-    console.log("pushed")
-    
-    console.log(chat(db,"What were the things I talked about regarding AI"))
+    let reply  = await chat(db,"What were the things I talked about regarding AI");
+    console.log("reply: "+reply)
+    console.log()
+
 }
