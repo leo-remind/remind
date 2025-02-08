@@ -6,8 +6,30 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import React, { useEffect, useState } from 'react';
+
+import { useSQLiteContext,
+type SQLiteDatabase } from 'expo-sqlite';
 
 export default function TabTwoScreen() {
+
+  const db = useSQLiteContext();
+
+  const [version, setVersion] = useState('');
+  useEffect(() => {
+    async function setup() {
+      const result = await db.getFirstAsync<{ 'sqlite_version()': string }>(
+        'SELECT sqlite_version()'
+      );
+      if (result)
+        setVersion(result['sqlite_version()']);
+    }
+    setup();
+  }, []);
+
+  // log the version to the console
+  console.log('SQLite version:', version);
+  
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -21,6 +43,7 @@ export default function TabTwoScreen() {
       }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Explore</ThemedText>
+        <ThemedText type="title">SQLITE: v{version}</ThemedText>
       </ThemedView>
       <ThemedText>This app includes example code to help you get started.</ThemedText>
       <Collapsible title="File-based routing">
