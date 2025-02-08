@@ -89,27 +89,63 @@ function ChildComponent() {
     }
     const startResult = await startRecording({
       interval: 1000 * 20 * 1,
-      enableProcessing: true,
+      keepAwake: true,
+      sampleRate: 16000,
+      channels: 1,
+      encoding: 'pcm_16bit',
+
       onAudioStream: async (adEvent: AudioDataEvent) => {
         // console.log(adEvent);
         // adEvent.data is base64 encoded string representing the audio buffer.
+        console.log("Fired");
+        // handleStop();
+        const result: AudioRecording | null = await stopRecording();
 
-        const audioDataB642 = await FileSystem.readAsStringAsync(
-          adEvent.fileUri,
-          {
-            encoding: FileSystem.EncodingType.Base64,
-          }
-        );
+        if (result) {
+          // console.log("Recording stopped:", result);
+          // console.log("File URI:", result.fileUri);
+          // console.log("Duration (ms):", result.durationMs);
+          // console.log("Size (bytes):", result.size);
+          // console.log("MIME type:", result.mimeType);
+          // console.log("Channels:", result.channels);
+          // console.log("Bit depth:", result.bitDepth);
+          // console.log("Sample rate:", result.sampleRate);
 
-        console.log("Read as string");
-        const audioData2 = new Uint8Array(
-          Buffer.from(audioDataB642, "base64")
-        );
-        console.log("Converted");
-        // Call arbaaz code
-        const db = await openDatabaseAsync("remind_db.sqlite");
-        await addConversation(db, audioData2, "", "");
-        console.log("CALLED ARBI CODE");
+          // if (result.compression) {
+          //   console.log(
+          //     "Compressed File URI:",
+          //     result.compression.compressedFileUri
+          //   );
+          //   console.log("Compressed Size:", result.compression.size);
+          //   console.log("Compression Format:", result.compression.format);
+          //   console.log("Compressed Bitrate:", result.compression.bitrate);
+          // }
+
+          // if (result.analysisData) {
+          //   console.log("Analysis Data:", result.analysisData);
+          // }
+
+          const audioDataB642 = await FileSystem.readAsStringAsync(
+            result.fileUri,
+            {
+              encoding: FileSystem.EncodingType.Base64,
+            }
+          );
+  
+          console.log("Read as string");
+          const audioData2 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
+          console.log("Converted");
+          // Call arbaaz code
+          const db = await openDatabaseAsync("remind_db.sqlite");
+          await addConversation(db, audioData2, "", "");
+          console.log("CALLED ARBI CODE");
+          
+        } else {
+          console.log("No recording result available.");
+        }
+        setAudioResult(result);
+
+        handleStart();
       },
     });
     return startResult;
@@ -218,9 +254,9 @@ TaskManager.defineTask(
         );
 
         console.log("Inserted location with ID: ", result.lastInsertRowId);
-        
-        const ms = new MediaSync(db);
-        await ms.syncPhotos();
+
+        // const ms = new MediaSync(db);
+        // await ms.syncPhotos();
       } else {
         console.log("No locations data available");
       }
