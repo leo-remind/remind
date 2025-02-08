@@ -2,7 +2,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useState } from 'react';
 // import * as faceapi from 'face-api.js';
 import { getHighestMatchingFace } from '../utils/rag/rag';
-import ModelLoader from './ModelLoader';
+// import ModelLoader from './ModelLoader';
 
 export class MediaSync {
   constructor(db) {
