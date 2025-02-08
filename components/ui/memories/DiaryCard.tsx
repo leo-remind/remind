@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
-import React, { useState, useMemo } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState, useMemo, Suspense } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface DiaryCardProps {
@@ -7,6 +8,41 @@ interface DiaryCardProps {
   className?: string;
   widthPercentage?: number;
   aspectRatio?: number;
+}
+
+const Loading = () => {
+  return (<Text>Loading...</Text>)
+}
+
+interface MemoryProps {
+  day: number,
+  month: number,
+  year: number
+}
+
+const Memory: React.FC<MemoryProps> = ({ day, month, year }) => {
+  const db = useSQLiteContext();
+  const memory: null | { 'name': string, 'summary': string } = db.getFirstSync("SELECT * FROM memory WHERE date = ?;", `${year}-${month}-${day}`);
+  console.log(memory)
+  if (!memory) {
+    return (
+      <Text className="text-xl text-white/80">
+        Seems like you have no memories of that day.
+        Or I forgot too :-)
+      </Text>
+    )
+  }
+
+  return (
+    <>
+      <Text className="text-xxl text-white/80">
+        {memory.name}
+      </Text>
+      <Text className="text-xl text-white/80">
+        {memory.summary}
+      </Text>
+    </>
+  )
 }
 
 const DiaryCard: React.FC<DiaryCardProps> = ({
@@ -132,7 +168,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
       w-[90%] max-w-2xl min-h-96
       ${className || ''}
     `}>
-    <View className="flex flex-col p-4">
+      <View className="flex flex-col p-4">
         <View className="flex flex-row items-center justify-center w-full h-16 
                       bg-white/50 rounded-full mb-4">
           {renderDateButtons()}
@@ -146,14 +182,14 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
 
         }} className="pl-2"
         ><View>
-          <Text className="text-4xl text-white font-serif mb-2">
-            {selectedDateInfo.date}
-            {getOrdinalSuffix(selectedDateInfo.date)}{' '}
-            {monthNames[selectedDateInfo.month]}
-          </Text>
-          <Text className="text-xl text-white/80">
-            Memories to come here, Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sequi nulla velit labore! Sunt minus repellendus adipisci quidem? Harum,
-          </Text>
+            <Text className="text-4xl text-white font-serif mb-2">
+              {selectedDateInfo.date}
+              {getOrdinalSuffix(selectedDateInfo.date)}{' '}
+              {monthNames[selectedDateInfo.month]}
+            </Text>
+            <Suspense fallback={<Loading />}>
+              <Memory day={selectedDateInfo.date} month={selectedDateInfo.month} year={selectedDateInfo.year} />
+            </Suspense>
           </View>
         </Link>
 

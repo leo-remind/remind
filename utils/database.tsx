@@ -27,8 +27,7 @@ export async function migrateDbIfNeeded(db: SQLite.SQLiteDatabase) {
   await db.execAsync(
     `CREATE TABLE IF NOT EXISTS memory (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT NOT NULL,
-      dates TEXT NOT NULL,
+      date DATE NOT NULL,
       name TEXT NOT NULL,
       summary TEXT NOT NULL,
       memory_start TIMESTAMP NOT NULL,
