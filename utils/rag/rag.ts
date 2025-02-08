@@ -87,9 +87,7 @@ async function retrieveRelevantConversations(db: SQLiteDatabase, queryEmbedding:
     return sortedRows.sort((a, b) => b.similarity - a.similarity).filter((num) => num.similarity > THRESHOLD);
 }
 
-export async function getHighestMatchingFace(targetFaceEmbedding: Float32Array, threshold: number): Promise<number|null> {
-    const db = useSQLiteContext();
-    
+export async function getHighestMatchingFace(db: SQLiteDatabase, targetFaceEmbedding: Float32Array, threshold: number): Promise<number|null> {
     const allRows: Array<FaceRow> = await db.getAllAsync(
         `SELECT id, face_embedding FROM persons`
     );

@@ -145,7 +145,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
           }
 
         }} className="pl-2"
-        >
+        ><View>
           <Text className="text-4xl text-white font-serif mb-2">
             {selectedDateInfo.date}
             {getOrdinalSuffix(selectedDateInfo.date)}{' '}
@@ -154,6 +154,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
           <Text className="text-xl text-white/80">
             Memories to come here, Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sequi nulla velit labore! Sunt minus repellendus adipisci quidem? Harum,
           </Text>
+          </View>
         </Link>
 
         <TouchableOpacity
