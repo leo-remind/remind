@@ -6,7 +6,7 @@ import * as FileSystem from 'expo-file-system'
 import { Asset } from "expo-asset";
 
 import env from "../env.json"
-import { createImageEmbedding, createTextEmbedding } from "@/utils/rag/rag";
+import { createImageEmbedding, createTextEmbedding, sqlTextEmbedding } from "@/utils/rag/rag";
 
 
 // const CONCATENATION_SERVER_URL = "https://remind-backend-cl32.onrender.com/concatenate-wav/"
@@ -255,7 +255,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     const insertionResult = await db.runAsync(`
       INSERT INTO conversations (summary, summary_vector, transcript_start, transcript_end, location_id)
       VALUES (?, ?, ?, ?, ?);
-    `, summary || "", new Uint8Array(), transcriptStart, transcriptEnd, result?.id || null);
+    `, summary || "", await sqlTextEmbedding(summary || ""), transcriptStart, transcriptEnd, result?.id || null);
     console.log("inserted into", insertionResult.lastInsertRowId)
 
 
