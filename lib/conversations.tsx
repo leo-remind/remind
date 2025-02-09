@@ -137,25 +137,25 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 export const queryDummyData = async (db: SQLiteDatabase): Promise<any> => {
   console.log("querying dummy data");
   console.log("persons:", await db.getAllAsync("SELECT COUNT(*) FROM persons;"));
-  await tryAddConv(db);
+  // await tryAddConv(db);
   return db.getAllAsync("SELECT * FROM persons;")
 }
 
-const tryAddConv = async (db: SQLiteDatabase) => {
-  const audioFileURI = FileSystem.documentDirectory + "america.wav";
+// const tryAddConv = async (db: SQLiteDatabase) => {
+//   const audioFileURI = FileSystem.documentDirectory + "america.wav";
 
-  const audioDataB64 = await FileSystem.readAsStringAsync(audioFileURI, {
-    encoding: FileSystem.EncodingType.Base64
-  });
+//   const audioDataB64 = await FileSystem.readAsStringAsync(audioFileURI, {
+//     encoding: FileSystem.EncodingType.Base64
+//   });
 
-  const audioData = new Uint8Array(Buffer.from(audioDataB64, "base64"));
+//   const audioData = new Uint8Array(Buffer.from(audioDataB64, "base64"));
 
-  // console.log("adding conv")
-  await addConversation(db, audioData, '', '')
-  console.log("Added conv done")
-  // console.log("convos:", await db.getAllAsync("SELECT * FROM conversations;"))
-  // console.log("convos:", await db.getAllAsync("SELECT * FROM person_conversations; "))
-}
+//   // console.log("adding conv")
+//   await addConversation(db, audioData, '', '')
+//   console.log("Added conv done")
+//   // console.log("convos:", await db.getAllAsync("SELECT * FROM conversations;"))
+//   // console.log("convos:", await db.getAllAsync("SELECT * FROM person_conversations; "))
+// }
 
 const wavToBlob = (arr: Uint8Array, fname: string): Blob => {
   const b64d = Array.from(arr)
@@ -196,7 +196,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
   try {
     const creationTime = new Date().toISOString();
 
-    // console.log("yo");
+    console.log("yo");
     const persons: { 'id': number, 'name': string, 'audio': Uint8Array }[] = await db.getAllAsync("SELECT * FROM persons");
     const ret: { 'name': string } | null = await db.getFirstAsync("SELECT * FROM persons WHERE id = 0;")
     const userName = ret ? ret.name : "person_0";
@@ -229,7 +229,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
       idx += 1
     }
 
-    // console.log("building convoarr")
+    console.log("building convoarr")
     let convoArr = []
     for (; idx < entries.length; idx++) {
       const who = mapping.get(entries[idx].speaker_id);

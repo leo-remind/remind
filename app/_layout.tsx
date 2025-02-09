@@ -96,7 +96,7 @@ function ChildComponent() {
       return;
     }
     const startResult = await startRecording({
-      interval: 1000 * 20 * 1,
+      interval: 1000 * 40 * 1,
       keepAwake: true,
       sampleRate: 16000,
       channels: 1,
@@ -214,7 +214,7 @@ TaskManager.defineTask(
 
     console.log(callCounter);
 
-    if (callCounter % 5 == 0) {
+    if (callCounter % 10 == 0) {
 
       const ts = new Date();
 
