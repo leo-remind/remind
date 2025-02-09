@@ -30,9 +30,10 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const [{ localUri }] = await Asset.loadAsync(require("../assets/audio/arb.wav"))
     const [{ localUri: localUriImg }] = await Asset.loadAsync(require("../assets/images/group_14.png"))
+    const [{ localUri: localUriImgPjr }] = await Asset.loadAsync(require("../assets/images/pjr.jpeg"))
     const [{ localUri: localUri2 }] = await Asset.loadAsync(require("../assets/audio/pjr.wav"))
     const [{ localUri: localUriAmerica }] = await Asset.loadAsync(require("../assets/audio/america.wav"))
-    if (!localUri || !localUriImg || !localUri2 || !localUriAmerica) {
+    if (!localUri || !localUriImgPjr || !localUriImg || !localUri2 || !localUriAmerica) {
       console.log("no uri");
       return
     }
@@ -40,6 +41,8 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     const audioFileURI2 = FileSystem.documentDirectory + "pjr.wav";
     const audioFileURIAmer = FileSystem.documentDirectory + "america.wav";
     const imgFile = FileSystem.documentDirectory + "group_14.png";
+    const pjrImgFile = FileSystem.documentDirectory + "pjr.jpeg";
+
     await FileSystem.copyAsync({
       from: localUri,
       to: audioFileURI
@@ -47,6 +50,10 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await FileSystem.copyAsync({
       from: localUriImg,
       to: imgFile
+    })
+    await FileSystem.copyAsync({
+      from: localUriImgPjr,
+      to: pjrImgFile
     })
 
     await FileSystem.copyAsync({
@@ -76,12 +83,18 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const imgData = new Uint8Array(Buffer.from(imgDataB6, "base64"));
 
+    const imgDataB6Pjr = await FileSystem.readAsStringAsync(pjrImgFile, {
+      encoding: FileSystem.EncodingType.Base64
+    });
+
+    const imgDataPjr = new Uint8Array(Buffer.from(imgDataB6Pjr, "base64"));
+
 
     await db.runAsync(`
     INSERT INTO PERSONS (name, birthdate, relation, audio, photo_data)
     VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?, ?),
     ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);
-  `, audioData, imgData, audioData2, imgData);
+  `, audioData, imgData, audioData2, imgDataPjr);
 
 
     const d1 = new Date();
@@ -98,11 +111,11 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       (?, "daily", "someday", 1, "Submit KRR Assignment", "Or you'll lose marks");
     `, d1.toISOString(), d2.toISOString(), d3.toISOString())
 
-      const experiences = [
-        "In Goa, you wandered along the golden beaches, sipped feni at a seaside shack, visited old Portuguese churches, and watched the sun dip into the Arabian Sea as fishermen pulled in their nets.",
-        "In Bandhavgarh, you rose before dawn for safaris, spotting tigers slinking through the tall grass, listened to the jungle wake up, and sat by the campfire at night, trading stories under a starlit sky.",
-        "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
-      ];
+    const experiences = [
+      "In Goa, you wandered along the golden beaches, sipped feni at a seaside shack, visited old Portuguese churches, and watched the sun dip into the Arabian Sea as fishermen pulled in their nets.",
+      "In Bandhavgarh, you rose before dawn for safaris, spotting tigers slinking through the tall grass, listened to the jungle wake up, and sat by the campfire at night, trading stories under a starlit sky.",
+      "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
+    ];
     await db.runAsync(`
     INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary)
     VALUES
