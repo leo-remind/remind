@@ -4,6 +4,7 @@ import { StyleSheet, Image, Platform, View, Text, SafeAreaView, ScrollView } fro
 import React, { useLayoutEffect } from "react"
 import { addDummyData } from "@/lib/conversations";
 import { populateDummyData } from "@/utils/DummyDataCreator";
+import { Link } from "expo-router";
 
 export default function MemoriesScreen() {
 
@@ -22,7 +23,6 @@ export default function MemoriesScreen() {
       <DiaryCard message="" className="bg-light-orange" />
       <View className="flex flex-row justify-between px-8 mt-4 mb-2">
         <Text className="text-xl font-bold font-sans">Trips</Text>
-        <Text className="text-orange font-sans text-xl">List All</Text>
       </View>
       <Trips />
 
@@ -38,11 +38,12 @@ export default function MemoriesScreen() {
 
 function Trips() {
   const db = useSQLiteContext();
-  let trips = db.getAllSync(`SELECT start_date, end_date, trip_name FROM trips`)
+  let trips = db.getAllSync(`SELECT id, start_date, url, end_date, trip_name FROM trips`)
 
+  console.log("we got trips", trips)
   return <View className="bg-white overflow-y-auto">
     <TripCarousel items={trips.map((trip) => {
-      return { "heading": trip.trip_name, "subheading": formatDateRange(trip.start_date, trip.end_date) }
+      return { "id": trips.id, "heading": trip.trip_name, "subheading": formatDateRange(new Date(trip.start_date), new Date(trip.end_date)), "src": trip.url }
     })} />
   </View>
 }
@@ -141,6 +142,7 @@ interface CarouselItem {
   src: string;
   heading: string;
   subheading: string;
+  id: number
 }
 
 interface TripCarouselProps {
@@ -152,32 +154,34 @@ const TripCarousel: React.FC<TripCarouselProps> = ({ items }) => {
 
   return (
     <ScrollView horizontal={true} className="w-full overflow-x-auto overflow-y-none pl-2">
-      <View className="flex gap-4 p-4 flex-row">
-        {items.map((item, index) => (
-          <View
-            key={index}
-            className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
-          >
-            <Image
-              source={{ uri: item.src }}
-              alt={item.heading}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
-              }}
-            />
-            <View className="absolute bottom-0 left-0 p-4">
-              <Text className="text-3xl font-bold font-sans text-white">
-                {item.heading}
-              </Text>
-              <Text className="text-lg  font-sans text-white">
-                {item.subheading}
-              </Text>
+      <Link href={{ pathname: "/memories/trip/[tid]", tid: item.id }}>
+        <View className="flex gap-4 p-4 flex-row">
+          {items.map((item, index) => (
+            <View
+              key={index}
+              className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
+            >
+              <Image
+                source={{ uri: item.src }}
+                alt={item.heading}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover"
+                }}
+              />
+              <View className="absolute bottom-0 left-0 p-4">
+                <Text className="text-3xl font-bold font-sans text-white">
+                  {item.heading}
+                </Text>
+                <Text className="text-lg  font-bold font-sans text-white">
+                  {item.subheading}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+          ))}
+        </View>
+      </Link>
+    </ScrollView >
   );
 };
