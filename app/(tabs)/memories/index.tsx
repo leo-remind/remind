@@ -38,15 +38,32 @@ export default function MemoriesScreen() {
 }
 
 function Trips() {
+  const db = useSQLiteContext();
+  let trips = db.getAllSync(`SELECT start_date, end_date, trip_name, url FROM trips`)
+
   return <View className="bg-white overflow-y-auto">
-    <TripCarousel items={[
-      { "src": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", "heading": "Mohalsssi", "subheading": "19th-20th Feb" },
-      { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Bangcok", "subheading": "19th-20th Feb" },
-      { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Bangcok", "subheading": "19th-20th Feb" },
-    ]} />
+    <TripCarousel items={ trips.map( (trip) => {
+      return {"src" : trip.url, "heading": trip.trip_name, "subheading" : formatDateRange(trip.start_date, trip.end_date)}})}/>
   </View>
 }
 
+function formatDateRange(start_date, end_date) {
+    const getOrdinal = (day) => {
+        if (day > 3 && day < 21) return 'th';
+        switch (day % 10) {
+            case 1: return 'st';
+            case 2: return 'nd';
+            case 3: return 'rd';
+            default: return 'th';
+        }
+    };
+
+    const day1 = start_date.getDate();
+    const day2 = end_date.getDate();
+    const month = end_date.toLocaleString('default', { month: 'long' });
+    
+    return `${day1}${getOrdinal(day1)} - ${day2}${getOrdinal(day2)} ${month}`;
+}
 
 const imgToUri = (arr: null | Uint8Array): string => {
   if (!arr) {

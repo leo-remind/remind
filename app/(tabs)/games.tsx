@@ -58,6 +58,7 @@ export default function DailyPracticeScreen() {
         <GameCard
           title="Memory Game"
           imageUrl={require("../../assets/images/group_14.png")}
+          onPlayed={handleGameComplete}
           gameType="memory"
         />
 
@@ -65,6 +66,7 @@ export default function DailyPracticeScreen() {
           title="Game 2" 
           imageUrl={require("../../assets/images/group_14.png")} 
           gameType="other"
+          onPlayed={() => {}}
         />
       </ScrollView>
     </SafeAreaView>

@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import React, { useState } from "react";
 import { Platform, Image, View, Text, TextInput } from "react-native";
 
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
@@ -25,16 +26,16 @@ function LogoTitle(props: any) {
 }
 
 export default function TabLayout() {
-  const [value,setValue] = useState("");
+  const [value, setValue] = useState("");
 
   const redirect = () => {
-        console.log("redirecto")
-        router.push({
-                  pathname: "/chat/[query]",
-                  params: {
-                    query: value
-                  }
-                });
+    console.log("redirecto")
+    router.push({
+      pathname: "/chat/[query]",
+      params: {
+        query: value
+      }
+    });
   }
 
   return (
@@ -124,23 +125,14 @@ export default function TabLayout() {
           options={{
             title: "Memories",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="figure.strengthtraining.traditional" color={color} />
+              <MaterialCommunityIcons name="brain" size={24} color="black" />
             ),
           }}
         />
         <Tabs.Screen
           name="games"
           options={{
-            title: 'Games',
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="gamepad.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="practice"
-          options={{
-            title: "Practice",
+            title: "Games",
             tabBarIcon: ({ color }) => (
               <IconSymbol size={28} name="gamepad.fill" color={color} />
             ),
