@@ -6,7 +6,6 @@ import * as FileSystem from 'expo-file-system'
 import { Asset } from "expo-asset";
 
 import env from "../env.json"
-import { createImageEmbedding, createTextEmbedding, sqlTextEmbedding } from "@/utils/rag/rag";
 
 
 // const CONCATENATION_SERVER_URL = "https://remind-backend-cl32.onrender.com/concatenate-wav/"
@@ -28,17 +27,13 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await db.runAsync("DELETE FROM persons;");
     await db.runAsync("DELETE FROM reminders;");
     await db.runAsync("DELETE FROM trips;");
-    await db.runAsync("DELETE FROM memory;");
-    await db.runAsync("DELETE FROM memory_conversations;");
-
 
     const [{ localUri }] = await Asset.loadAsync(require("../assets/audio/arb.wav"))
     const [{ localUri: localUriImg }] = await Asset.loadAsync(require("../assets/images/group_14.png"))
     const [{ localUri: localUriImgPjr }] = await Asset.loadAsync(require("../assets/images/pjr.jpeg"))
-    const [{ localUri: localUriImgChai }] = await Asset.loadAsync(require("../assets/images/chai.jpeg"))
     const [{ localUri: localUri2 }] = await Asset.loadAsync(require("../assets/audio/pjr.wav"))
     const [{ localUri: localUriAmerica }] = await Asset.loadAsync(require("../assets/audio/america.wav"))
-    if (!localUri || !localUriImgPjr || !localUriImgChai ||!localUriImg || !localUri2 || !localUriAmerica) {
+    if (!localUri || !localUriImgPjr || !localUriImg || !localUri2 || !localUriAmerica) {
       console.log("no uri");
       return
     }
@@ -47,7 +42,6 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     const audioFileURIAmer = FileSystem.documentDirectory + "america.wav";
     const imgFile = FileSystem.documentDirectory + "group_14.png";
     const pjrImgFile = FileSystem.documentDirectory + "pjr.jpeg";
-    const ImgFile3 = FileSystem.documentDirectory + "chai.jpeg";
 
     await FileSystem.copyAsync({
       from: localUri,
@@ -60,11 +54,6 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await FileSystem.copyAsync({
       from: localUriImgPjr,
       to: pjrImgFile
-    })
-
-    await FileSystem.copyAsync({
-      from: localUriImgChai,
-      to: ImgFile3
     })
 
     await FileSystem.copyAsync({
@@ -88,8 +77,6 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const audioData2 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
 
-    const audioData3 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
-
     const imgDataB6 = await FileSystem.readAsStringAsync(imgFile, {
       encoding: FileSystem.EncodingType.Base64
     });
@@ -100,20 +87,16 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       encoding: FileSystem.EncodingType.Base64
     });
 
-    const imgDataB6Chai = await FileSystem.readAsStringAsync(ImgFile3, {
-      encoding: FileSystem.EncodingType.Base64
-    });
-
     const imgDataPjr = new Uint8Array(Buffer.from(imgDataB6Pjr, "base64"));
-    const imgDataChai = new Uint8Array(Buffer.from(imgDataB6Pjr, "base64"));
 
 
     await db.runAsync(`
     INSERT INTO PERSONS (name, birthdate, relation, audio, photo_data)
-    VALUES ("Arbaaz Shafiq", 2003-05-13, "self", ?, ?),
+    VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?, ?),
     ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);,
     ("Chaitanya Modi", 2003-11-7, "Daughter", ?, ?);
-  `, audioData, imgData, audioData2, imgDataPjr, audioData3, imgDataChai);
+    ("Arnav Rustagi", 2004-09-02, "Son", ?, ?);
+  `, audioData, imgData, audioData2, imgDataPjr);
 
 
     const d1 = new Date();
@@ -135,10 +118,8 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       "In Bandhavgarh, you rose before dawn for safaris, spotting tigers slinking through the tall grass, listened to the jungle wake up, and sat by the campfire at night, trading stories under a starlit sky.",
       "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
     ];
-
-    console.log("tripping")
     await db.runAsync(`
-    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary, summary_vector)
+    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary)
     VALUES
       ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
       ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextVector(experiences[1])}"),
@@ -192,11 +173,11 @@ const generateConvSummary = async (convo: string, user: string): Promise<string 
   const contentString = `The Primary Person is ${user}\n===CONVERSATION BEGIN===\n${convo}\n===CONVERSATION END===\n`
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4-turbo-preview",
     messages: [
       {
         role: "system",
-        content: "You are a helpful assistant that summarizes the conversations that the Primary Person is having. Summarize the given conversation."
+        content: "You are a helpful assistant that summrizes the conversations that the Primary Person is having. Summarize the given conversation."
       },
       {
         role: "user",
@@ -271,7 +252,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     const insertionResult = await db.runAsync(`
       INSERT INTO conversations (summary, summary_vector, transcript_start, transcript_end, location_id)
       VALUES (?, ?, ?, ?, ?);
-    `, summary || "", await sqlTextEmbedding(summary || ""), transcriptStart, transcriptEnd, result?.id || null);
+    `, summary || "", new Uint8Array(), transcriptStart, transcriptEnd, result?.id || null);
     console.log("inserted into", insertionResult.lastInsertRowId)
 
 
@@ -287,9 +268,6 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     return false
   }
 }
-
-async function sqlTextVector(text: string) {
-  let vector = await createTextEmbedding(text);
-  return `[${vector}]`
+function sqlTextVector(arg0: string) {
+  throw new Error("Function not implemented.");
 }
-
