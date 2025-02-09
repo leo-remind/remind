@@ -120,7 +120,7 @@ export async function migrateDbIfNeeded(db: SQLite.SQLiteDatabase) {
       trip_name TEXT NOT NULL,
       start_date TIMESTAMP NOT NULL,
       end_date TIMESTAMP NOT NULL,
-      url TEXT
+      url TEXT,
       location_id INTEGER,
       trip_summary TEXT,
       summary_vector TEXT,
