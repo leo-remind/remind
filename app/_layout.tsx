@@ -105,33 +105,11 @@ function ChildComponent() {
       onAudioStream: async (adEvent: AudioDataEvent) => {
         // console.log(adEvent);
         // adEvent.data is base64 encoded string representing the audio buffer.
-        console.log("Fired");
+        console.log("[ad_handler] Audio Data Recieved");
         // handleStop();
         const result: AudioRecording | null = await stopRecording();
 
         if (result) {
-          // console.log("Recording stopped:", result);
-          // console.log("File URI:", result.fileUri);
-          // console.log("Duration (ms):", result.durationMs);
-          // console.log("Size (bytes):", result.size);
-          // console.log("MIME type:", result.mimeType);
-          // console.log("Channels:", result.channels);
-          // console.log("Bit depth:", result.bitDepth);
-          // console.log("Sample rate:", result.sampleRate);
-
-          // if (result.compression) {
-          //   console.log(
-          //     "Compressed File URI:",
-          //     result.compression.compressedFileUri
-          //   );
-          //   console.log("Compressed Size:", result.compression.size);
-          //   console.log("Compression Format:", result.compression.format);
-          //   console.log("Compressed Bitrate:", result.compression.bitrate);
-          // }
-
-          // if (result.analysisData) {
-          //   console.log("Analysis Data:", result.analysisData);
-          // }
 
           const audioDataB642 = await FileSystem.readAsStringAsync(
             result.fileUri,
@@ -146,7 +124,7 @@ function ChildComponent() {
           // Call arbaaz code
           const db = await openDatabaseAsync("remind_db.sqlite");
           await addConversation(db, audioData2, "", "");
-          console.log("CALLED ARBI CODE");
+          console.log("[ad_handler] called conversation handler");
           
         } else {
           console.log("No recording result available.");
