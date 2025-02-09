@@ -24,11 +24,11 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    // const fn = async () => {
-    //   await addDummyData(db);
-    //   console.log("added dummy data")
-    // }
-    // fn()
+    const fn = async () => {
+      await addDummyData(db);
+      console.log("added dummy data")
+    }
+    fn()
   }, [])
 
   // <Button onPress={buttonPress} title="cooking"/>

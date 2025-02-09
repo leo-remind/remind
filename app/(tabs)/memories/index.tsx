@@ -18,18 +18,17 @@ export default function MemoriesScreen() {
       </View>
       <View className="flex flex-row justify-between px-8 mb-2">
         <Text className="text-xl font-bold font-sans">Calender</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
       </View>
       <DiaryCard message="" className="bg-light-orange" />
       <View className="flex flex-row justify-between px-8 mt-4 mb-2">
         <Text className="text-xl font-bold font-sans">Trips</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
+        <Text className="text-orange font-sans text-xl">List All</Text>
       </View>
       <Trips />
 
       <View className="flex flex-row justify-between px-8 mt-4 mb-2">
         <Text className="text-xl font-bold font-sans">People</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
+        <Text className="text-orange font-sans text-xl">List All</Text>
       </View>
       <People />
     </ScrollView>
@@ -42,27 +41,28 @@ function Trips() {
   let trips = db.getAllSync(`SELECT start_date, end_date, trip_name FROM trips`)
 
   return <View className="bg-white overflow-y-auto">
-    <TripCarousel items={ trips.map( (trip) => {
-      return {"heading": trip.trip_name, "subheading" : formatDateRange(trip.start_date, trip.end_date)}})}/>
+    <TripCarousel items={trips.map((trip) => {
+      return { "heading": trip.trip_name, "subheading": formatDateRange(trip.start_date, trip.end_date) }
+    })} />
   </View>
 }
 
 function formatDateRange(start_date, end_date) {
-    const getOrdinal = (day) => {
-        if (day > 3 && day < 21) return 'th';
-        switch (day % 10) {
-            case 1: return 'st';
-            case 2: return 'nd';
-            case 3: return 'rd';
-            default: return 'th';
-        }
-    };
+  const getOrdinal = (day) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
 
-    const day1 = start_date.getDate();
-    const day2 = end_date.getDate();
-    const month = end_date.toLocaleString('default', { month: 'long' });
-    
-    return `${day1}${getOrdinal(day1)} - ${day2}${getOrdinal(day2)} ${month}`;
+  const day1 = start_date.getDate();
+  const day2 = end_date.getDate();
+  const month = end_date.toLocaleString('default', { month: 'long' });
+
+  return `${day1}${getOrdinal(day1)} - ${day2}${getOrdinal(day2)} ${month}`;
 }
 
 const imgToUri = (arr: null | Uint8Array): string => {
@@ -85,16 +85,11 @@ function People() {
     return { "imageUri": imgToUri(photo_data), "text": name }
   })
 
-  return <View>< PeopleGrid
-    profiles={
-      // [
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },]
-      parsedPersons
-    }
-  />
-  </View >;
+  return (
+    <View className="m-auto">
+      <PeopleGrid profiles={parsedPersons} />
+    </View >
+  )
 }
 
 interface People {
@@ -119,7 +114,7 @@ const PeopleGrid: React.FC<PeopleGridProps> = ({
   };
 
   return (
-    <View className="flex flex-wrap gap-8 flex-row w-96 justify-center">
+    <View className="flex mt-4 flex-wrap gap-8 flex-row w-96 justify-center">
       {profiles.map((profile, index) => (
         <View key={index} className="flex flex-col items-center">
           <View
