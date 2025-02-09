@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-A AI-Powered Virtual Memory System for pateints of Dementia.
+An AI-Powered Virtual Memory System for pateints of Dementia.
 </p>
 
 | Home Screen | Fun & Useful Games | Trip Screen |
