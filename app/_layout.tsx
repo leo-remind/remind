@@ -210,14 +210,11 @@ function ChildComponent() {
     }
   }, []);
 
-  const addStuff = async () => {
-    console.log("Adding things?");
-    const db = useSQLiteContext();
-
-    
-    
-    populateDummyData(db);
-  };
+  // const addStuff = async () => {
+  //   console.log("Adding things?");
+  //   const db = useSQLiteContext();
+  //   populateDummyData(db);
+  // };
 
   return (
     <ThemeProvider value={DefaultTheme}>
@@ -225,7 +222,7 @@ function ChildComponent() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <Button title="yo add stuff" onPress={addStuff}></Button>
+      {/* <Button title="yo add stuff" onPress={addStuff}></Button> */}
       <StatusBar style="auto" />
     </ThemeProvider>
   );

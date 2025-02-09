@@ -6,6 +6,7 @@ import * as FileSystem from 'expo-file-system'
 import { Asset } from "expo-asset";
 
 import env from "../env.json"
+import { createImageEmbedding, createTextEmbedding, sqlTextEmbedding } from "@/utils/rag/rag";
 
 
 // const CONCATENATION_SERVER_URL = "https://remind-backend-cl32.onrender.com/concatenate-wav/"
@@ -134,19 +135,15 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       "In Bandhavgarh, you rose before dawn for safaris, spotting tigers slinking through the tall grass, listened to the jungle wake up, and sat by the campfire at night, trading stories under a starlit sky.",
       "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
     ];
+
+    console.log("tripping")
     await db.runAsync(`
-    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary)
+    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary, summary_vector)
     VALUES
-      ("Goa", "2023-04-04", "2023-04-08","https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , ?, ?),
-      ("Bandhavgarh", "2024-01-01", "2024-01-10", "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", ?, ?),
-      ("Raipur", "2023-11-12", "2023-11-15", "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", ?, ?);
-    `, experiences[0], sqlTextVector(experiences[0]), 
-       experiences[1], sqlTextVector(experiences[1]), 
-       experiences[2], sqlTextVector(experiences[2]));
-    //   ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
-    //   ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextVector(experiences[1])}"),
-    //   ("Raipur", 2023-11-12, 2023-11-15, "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", "${experiences[2]}", "${sqlTextVector(experiences[2])}");
-    // `)
+      ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
+      ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextVector(experiences[1])}"),
+      ("Raipur", 2023-11-12, 2023-11-15, "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", "${experiences[2]}", "${sqlTextVector(experiences[2])}");
+    `)
     console.log("added dummy data");
 
   } catch (error) {
@@ -199,7 +196,7 @@ const generateConvSummary = async (convo: string, user: string): Promise<string 
     messages: [
       {
         role: "system",
-        content: "You are a helpful assistant that summrizes the conversations that the Primary Person is having. Summarize the given conversation."
+        content: "You are a helpful assistant that summarizes the conversations that the Primary Person is having. Summarize the given conversation."
       },
       {
         role: "user",
@@ -274,7 +271,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     const insertionResult = await db.runAsync(`
       INSERT INTO conversations (summary, summary_vector, transcript_start, transcript_end, location_id)
       VALUES (?, ?, ?, ?, ?);
-    `, summary || "", new Uint8Array(), transcriptStart, transcriptEnd, result?.id || null);
+    `, summary || "", await sqlTextEmbedding(summary || ""), transcriptStart, transcriptEnd, result?.id || null);
     console.log("inserted into", insertionResult.lastInsertRowId)
 
 
@@ -290,7 +287,9 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     return false
   }
 }
-function sqlTextVector(arg0: string) {
-  throw new Error("Function not implemented.");
+
+async function sqlTextVector(text: string) {
+  let vector = await createTextEmbedding(text);
+  return `[${vector}]`
 }
 
