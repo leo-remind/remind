@@ -117,7 +117,6 @@ export class MemoryCreator {
   {
     "memories": [
       {
-        "type": "one of: conversation, activity, event, milestone",
         "name": "A concise, meaningful title that captures the essence of this memory",
         "summary": "A detailed description focusing on the significance of this interaction or event",
         "date": "2024-02-09T15:30:00Z"
@@ -144,7 +143,6 @@ export class MemoryCreator {
   
     // Process all memories in the array
     return response.memories.map((memory: any) => ({
-      type: memory.type,
       name: memory.name,
       summary: memory.summary,
       date: new Date(memory.date),
@@ -163,10 +161,9 @@ export class MemoryCreator {
     try {
       for (const memory of memories) {
         const result = await db.runAsync(
-          `INSERT INTO memory (type, date, name, summary, memory_start, memory_end, trip_id)
+          `INSERT INTO memory (date, name, summary, memory_start, memory_end, trip_id)
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
-            memory.type,
             memory.date.toISOString(),
             memory.name,
             memory.summary,
