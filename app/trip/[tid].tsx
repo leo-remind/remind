@@ -29,38 +29,35 @@ function formatDateRange(start_date, end_date) {
     return `${day1}${getOrdinal(day1)} - ${day2}${getOrdinal(day2)} ${month}`;
 }
 
-function App() {
+export default function Page() {
     const { tid } = useLocalSearchParams();
+    console.log("GOT TID", tid)
     const db = useSQLiteContext();
-    let trip = db.getFirstSync(`SELECT * FROM trips WHERE id = ${tid}`)
+    let trip = db.runSync("SELECT * FROM trips WHERE id = ?;", tid)
+    console.log("GOT TRIP", trip)
 
     return (
         <SafeAreaView className="flex-1 bg-white">
             <ScrollView className="p-8 flex flex-col">
                 <View className="flex flex-col">
                     <View className="w-full h-96">
-                        <Image source={{uri: trip.url }} className="w-full h-full object-fit"/>
+                        <Image source={{ uri: trip.url }} className="w-full h-full object-fit" />
                         <View className="absolute bottom-4 left-4">
                             <Text className="text-2xl font-bold">
                                 {trip.trip_name}
                             </Text>
                             <Text className="text-lg font-semibold">
-                                formatDateRange(new Date(trip.start_date), new Date(trip.end_date))
+                                {formatDateRange(new Date(trip.start_date), new Date(trip.end_date))}
                             </Text>
                         </View>
                     </View>
-                            <Text className="text-xl font-bold">Summary</Text>
-                            <Text className="text-lg">
-                                {trip.trip_summary}
-                            </Text>
+                    <Text className="text-xl font-bold">Summary</Text>
+                    <Text className="text-lg">
+                        {trip.trip_summary}
+                    </Text>
                     <View className="flex-row flex flex-wrap">
-        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] h-96 aspect-square" />
-        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
-        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
-        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] h-96 aspect-square" />
-        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
-        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
-      </View>
+                        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+                    </View>
                 </View>
             </ScrollView>
         </SafeAreaView>

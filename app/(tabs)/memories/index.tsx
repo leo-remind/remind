@@ -32,18 +32,17 @@ export default function MemoriesScreen() {
       </View>
       <People />
     </ScrollView>
-
   </SafeAreaView>
 }
 
 function Trips() {
   const db = useSQLiteContext();
-  let trips = db.getAllSync(`SELECT id, start_date, url, end_date, trip_name FROM trips`)
+  let trips = db.getAllSync(`SELECT id, start_date, url, end_date, trip_name FROM trips;`)
 
   console.log("we got trips", trips)
   return <View className="bg-white overflow-y-auto">
     <TripCarousel items={trips.map((trip) => {
-      return { "id": trips.id, "heading": trip.trip_name, "subheading": formatDateRange(new Date(trip.start_date), new Date(trip.end_date)), "src": trip.url }
+      return { "id": trip.id, "heading": trip.trip_name, "subheading": formatDateRange(new Date(trip.start_date), new Date(trip.end_date)), "src": trip.url }
     })} />
   </View>
 }
@@ -154,34 +153,36 @@ const TripCarousel: React.FC<TripCarouselProps> = ({ items }) => {
 
   return (
     <ScrollView horizontal={true} className="w-full overflow-x-auto overflow-y-none pl-2">
-      <Link href={{ pathname: "/memories/trip/[tid]", tid: item.id }}>
-        <View className="flex gap-4 p-4 flex-row">
-          {items.map((item, index) => (
-            <View
-              key={index}
-              className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
-            >
-              <Image
-                source={{ uri: item.src }}
-                alt={item.heading}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover"
-                }}
-              />
-              <View className="absolute bottom-0 left-0 p-4">
-                <Text className="text-3xl font-bold font-sans text-white">
-                  {item.heading}
-                </Text>
-                <Text className="text-lg  font-bold font-sans text-white">
-                  {item.subheading}
-                </Text>
+      <View className="flex gap-4 p-4 flex-row">
+        {items.map((item, index) => {
+          console.log("WILL GO TO THIS TID", item)
+          return (
+            <Link key={index} href={{ pathname: "/trip/[tid]", params: { tid: item.id } }}>
+              <View
+                className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
+              >
+                <Image
+                  source={{ uri: item.src }}
+                  alt={item.heading}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover"
+                  }}
+                />
+                <View className="absolute bottom-0 left-0 p-4">
+                  <Text className="text-3xl font-bold font-sans text-white">
+                    {item.heading}
+                  </Text>
+                  <Text className="text-lg  font-bold font-sans text-white">
+                    {item.subheading}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
-      </Link>
+            </Link>
+          )
+        })}
+      </View>
     </ScrollView >
   );
 };
