@@ -22,8 +22,8 @@ interface MemoryProps {
 
 const Memory: React.FC<MemoryProps> = ({ day, month, year }) => {
   const db = useSQLiteContext();
-  
-  const memory = db.getFirstSync("SELECT * FROM memory WHERE date = ? ORDER BY id DESC;", `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+
+  const memory = db.getFirstSync("SELECT * FROM memory WHERE date = ? ORDER BY id DESC;", `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
   console.log("Queries for memory");
   // console.log("SELECT * FROM memory WHERE date = ?;", `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
 
@@ -166,12 +166,12 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
 
   return (
     <View className={`
-       mx-auto bg-blue-500 rounded-3xl
+      mx-auto bg-blue-500 rounded-3xl
       relative
-      w-[90%] max-w-2xl min-h-96
+      w-[90%] max-w-2xl min-h-fit
       ${className || ''}
     `}>
-    <View className="flex flex-col p-4">
+      <View className="flex flex-col p-4">
         <View className="flex flex-row items-center justify-center w-full h-12 
                       bg-white/50 rounded-full mb-4">
           {renderDateButtons()}
@@ -197,22 +197,12 @@ const DiaryCard: React.FC<DiaryCardProps> = ({
         </Link>
 
         <TouchableOpacity
-          className="w-full mb-6 text-left"
+          className="w-full text-left"
           onPress={() => alert(message)}
           aria-label="View message details"
         >
-          <Text className="text-5xl text-white font-['DM_Sans'] leading-tight 
-                       line-clamp-2">
+          <Text className="text-5xl text-white font-['DM_Sans'] leading-tight line-clamp-2">
             {message}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="absolute bottom-6 left-6"
-          aria-label="See more details"
-        >
-          <Text className="text-base font-bold text-black/50">
-            TAP TO SEE MORE
           </Text>
         </TouchableOpacity>
       </View>
