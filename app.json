@@ -12,7 +12,6 @@
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
-          "fetch",
           "fetch"
         ],
         "NSPhotoLibraryUsageDescription": "Allow access to photo library to sync your photos",
@@ -107,6 +106,10 @@
       ],
       [
         "@siteed/expo-audio-stream"
+        
+      ],
+      [
+        "expo-notifications"
       ]
     ],
     "experiments": {
