@@ -80,7 +80,7 @@ export default function TabLayout() {
               color: "#333",
             }}
           />
-          <MaterialIcons name="mic" size={24} color="#666" />
+          <MaterialIcons name="send" size={24} color="#666" />
         </View>
       </View>
 
