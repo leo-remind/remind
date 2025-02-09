@@ -28,13 +28,17 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await db.runAsync("DELETE FROM persons;");
     await db.runAsync("DELETE FROM reminders;");
     await db.runAsync("DELETE FROM trips;");
+    await db.runAsync("DELETE FROM memory;");
+    await db.runAsync("DELETE FROM memory_conversations;");
+
 
     const [{ localUri }] = await Asset.loadAsync(require("../assets/audio/arb.wav"))
     const [{ localUri: localUriImg }] = await Asset.loadAsync(require("../assets/images/group_14.png"))
     const [{ localUri: localUriImgPjr }] = await Asset.loadAsync(require("../assets/images/pjr.jpeg"))
+    const [{ localUri: localUriImgChai }] = await Asset.loadAsync(require("../assets/images/chai.jpeg"))
     const [{ localUri: localUri2 }] = await Asset.loadAsync(require("../assets/audio/pjr.wav"))
     const [{ localUri: localUriAmerica }] = await Asset.loadAsync(require("../assets/audio/america.wav"))
-    if (!localUri || !localUriImgPjr || !localUriImg || !localUri2 || !localUriAmerica) {
+    if (!localUri || !localUriImgPjr || !localUriImgChai ||!localUriImg || !localUri2 || !localUriAmerica) {
       console.log("no uri");
       return
     }
@@ -43,6 +47,7 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     const audioFileURIAmer = FileSystem.documentDirectory + "america.wav";
     const imgFile = FileSystem.documentDirectory + "group_14.png";
     const pjrImgFile = FileSystem.documentDirectory + "pjr.jpeg";
+    const ImgFile3 = FileSystem.documentDirectory + "chai.jpeg";
 
     await FileSystem.copyAsync({
       from: localUri,
@@ -55,6 +60,11 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await FileSystem.copyAsync({
       from: localUriImgPjr,
       to: pjrImgFile
+    })
+
+    await FileSystem.copyAsync({
+      from: localUriImgChai,
+      to: ImgFile3
     })
 
     await FileSystem.copyAsync({
@@ -78,6 +88,8 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const audioData2 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
 
+    const audioData3 = new Uint8Array(Buffer.from(audioDataB642, "base64"));
+
     const imgDataB6 = await FileSystem.readAsStringAsync(imgFile, {
       encoding: FileSystem.EncodingType.Base64
     });
@@ -88,16 +100,20 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       encoding: FileSystem.EncodingType.Base64
     });
 
+    const imgDataB6Chai = await FileSystem.readAsStringAsync(ImgFile3, {
+      encoding: FileSystem.EncodingType.Base64
+    });
+
     const imgDataPjr = new Uint8Array(Buffer.from(imgDataB6Pjr, "base64"));
+    const imgDataChai = new Uint8Array(Buffer.from(imgDataB6Pjr, "base64"));
 
 
     await db.runAsync(`
     INSERT INTO PERSONS (name, birthdate, relation, audio, photo_data)
-    VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?, ?),
+    VALUES ("Arbaaz Shafiq", 2003-05-13, "self", ?, ?),
     ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);,
     ("Chaitanya Modi", 2003-11-7, "Daughter", ?, ?);
-    ("Arnav Rustagi", 2004-09-02, "Son", ?, ?);
-  `, audioData, imgData, audioData2, imgDataPjr);
+  `, audioData, imgData, audioData2, imgDataPjr, audioData3, imgDataChai);
 
 
     const d1 = new Date();
@@ -124,7 +140,7 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await db.runAsync(`
     INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary, summary_vector)
     VALUES
-      ("Goa", 2023-04-04, 2023-04-08, "https://blog.bedandchai.com/wp-content/uploads/2015/12/World___India_Relax_on_the_beach_in_Arambol_068131_.jpg" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
+      ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
       ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextVector(experiences[1])}"),
       ("Raipur", 2023-11-12, 2023-11-15, "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", "${experiences[2]}", "${sqlTextVector(experiences[2])}");
     `)
@@ -176,11 +192,11 @@ const generateConvSummary = async (convo: string, user: string): Promise<string 
   const contentString = `The Primary Person is ${user}\n===CONVERSATION BEGIN===\n${convo}\n===CONVERSATION END===\n`
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4-turbo-preview",
+    model: "gpt-4o",
     messages: [
       {
         role: "system",
-        content: "You are a helpful assistant that summrizes the conversations that the Primary Person is having. Summarize the given conversation."
+        content: "You are a helpful assistant that summarizes the conversations that the Primary Person is having. Summarize the given conversation."
       },
       {
         role: "user",
