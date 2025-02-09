@@ -4,18 +4,20 @@ import { useRouter } from "expo-router"
 import { useNavigation } from "@react-navigation/native"
 
 interface GameCardProps {
-  title: string 
+  title: string
   imageUrl: ImageSourcePropType
+  onPlayed: () => void
   gameType: string
   subtitle: string|null
 }
 
-export const GameCard: React.FC<GameCardProps> = ({ title, imageUrl, gameType, subtitle = null }) => {
+export const GameCard: React.FC<GameCardProps> = ({ title, imageUrl, gameType, onPlayed, subtitle = null }) => {
   const router = useRouter()
 
   const handlePress = () => {
     if (gameType === 'memory') {
-      router.push('/games/memory') 
+      router.push('/games/memory')
+      onPlayed()
     }
   }
 
