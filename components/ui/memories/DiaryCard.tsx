@@ -22,8 +22,11 @@ interface MemoryProps {
 
 const Memory: React.FC<MemoryProps> = ({ day, month, year }) => {
   const db = useSQLiteContext();
-  const memory: null | { 'name': string, 'summary': string } = db.getFirstSync("SELECT * FROM memory WHERE date = ?;", `${year}-${month}-${day}`);
-  console.log(memory)
+  
+  const memory = db.getFirstSync("SELECT * FROM memory ORDER BY id DESC;");
+  console.log("Queries for memory");
+  // console.log("SELECT * FROM memory WHERE date = ?;", `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+
   if (!memory) {
     return (
       <Text className="text-xl text-white/80">

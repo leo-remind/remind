@@ -152,11 +152,14 @@ export class MemoryCreator {
   
     try {
       for (const memory of memories) {
+
+        let dateToInsert = new Date().toISOString().split("T")[0];
+        console.log(dateToInsert);
         const result = await db.runAsync(
           `INSERT INTO memory (date, name, summary, memory_start, memory_end, trip_id)
            VALUES (?, ?, ?, ?, ?, ?)`,
           [
-            memory.date.toISOString(),
+            dateToInsert,
             memory.name,
             memory.summary,
             memory.memory_start,
@@ -190,11 +193,11 @@ export class MemoryCreator {
     }
 
     // query for al memories
-    const memories_content = await db.getAllAsync<Memory>(
-      `SELECT * FROM memory`
-    );
+    // const memories_content = await db.getAllAsync<Memory>(
+    //   `SELECT * FROM memory`
+    // );
 
-    console.log(memories_content);
+    // console.log(memories_content);
 
   }
   

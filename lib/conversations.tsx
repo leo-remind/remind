@@ -234,8 +234,8 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     return true
 
   } catch (error) {
-    // console.log(`errored ${error}`, JSON.stringify(error))
-    console.log("big error: most likely internal server error.");
+    console.log(`errored ${error}`, JSON.stringify(error))
+    // console.log("big error: most likely internal server error.");
     return false
   }
 }

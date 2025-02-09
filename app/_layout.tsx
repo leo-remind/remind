@@ -21,7 +21,7 @@ import React from "react";
 import { useFonts, DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans' ;
 import { DMSerifText_400Regular } from '@expo-google-fonts/dm-serif-text';
 
-import { openDatabaseAsync, SQLiteProvider } from "expo-sqlite";
+import { openDatabaseAsync, SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 
 import { migrateDbIfNeeded } from "@/utils/database";
 
@@ -42,6 +42,7 @@ import { MemoryCreator } from "@/utils/MemoryCreator";
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
 import { addConversation } from "@/lib/conversations";
+import { populateDummyData } from "@/utils/DummyDataCreator";
 
 // import { MediaSync } from "@/utils/MediaSync&Face";
 
@@ -209,12 +210,22 @@ function ChildComponent() {
     }
   }, []);
 
+  const addStuff = async () => {
+    console.log("Adding things?");
+    const db = useSQLiteContext();
+
+    
+    
+    populateDummyData(db);
+  };
+
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
+      <Button title="yo add stuff" onPress={addStuff}></Button>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

@@ -1,10 +1,12 @@
 import DiaryCard from "@/components/ui/memories/DiaryCard";
 import { useSQLiteContext } from "expo-sqlite";
 import { StyleSheet, Image, Platform, View, Text, SafeAreaView, ScrollView } from "react-native";
-import React from "react"
+import React, { useLayoutEffect } from "react"
 import { addDummyData } from "@/lib/conversations";
+import { populateDummyData } from "@/utils/DummyDataCreator";
 
 export default function MemoriesScreen() {
+  
   return <SafeAreaView className="flex-1 bg-white">
     <ScrollView>
       <View className="flex-row justify-between items-start px-8 pt-8 mt-2">

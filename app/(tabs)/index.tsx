@@ -24,11 +24,11 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    const fn = async () => {
-      await addDummyData(db);
-      console.log("added dummy data")
-    }
-    fn()
+    // const fn = async () => {
+    //   await addDummyData(db);
+    //   console.log("added dummy data")
+    // }
+    // fn()
   }, [])
 
   // <Button onPress={buttonPress} title="cooking"/>
@@ -57,7 +57,7 @@ export default function HomeScreen() {
         <View className="px-8 pt-8">
           <Text className="font-sans text-3xl mb-4 font-bold text-black/50">Reminders</Text>
           <TouchableOpacity onPress={() => setIsModalVisible(true)} className="bg-light-blue/50 p-4 rounded-xl">
-            <Text className="text-4xl font-bold color-blue m-auto">+</Text>
+            <Text className="text-4xl font-bold coloxr-blue m-auto">+</Text>
           </TouchableOpacity>
           <AddReminderModal
             isVisible={isModalVisible}
