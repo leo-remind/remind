@@ -17,7 +17,7 @@ export const GameCard: React.FC<GameCardProps> = ({ title, imageUrl, gameType, o
   const handlePress = () => {
     if (gameType === 'memory') {
       router.push('/games/memory')
-      onPlayed()
+      setTimeout(onPlayed, 500)
     }
   }
 
