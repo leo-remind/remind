@@ -42,7 +42,7 @@ export class MemoryCreator {
   private lastProcessedTimestamp: string;
 
   constructor() {
-    this.lastProcessedTimestamp = new Date(Date.now() - 3600000).toISOString(); // Start from 1 hour ago
+    this.lastProcessedTimestamp = new Date(Date.now() - 25000).toISOString(); // Start from 1 hour ago
   }
 
   private async getUnprocessedConversations(db: SQLiteDatabase): Promise<{
@@ -50,6 +50,9 @@ export class MemoryCreator {
     personConversations: PersonConversation[];
     persons: Person[];
   }> {
+
+    console.log("CHAITANYA CODE");
+
     const conversations = await db.getAllAsync<Conversation>(
       `SELECT c.* FROM conversations c
        LEFT JOIN memory_conversations mc ON c.id = mc.conversation_id

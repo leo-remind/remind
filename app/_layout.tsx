@@ -227,7 +227,7 @@ TaskManager.defineTask(
 
     console.log(callCounter);
 
-    if (callCounter % 1 == 0) {
+    if (callCounter % 5 == 0) {
       console.log("Running memory tasks");
 
       const db = await openDatabaseAsync("remind_db.sqlite");
