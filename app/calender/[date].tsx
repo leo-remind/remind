@@ -14,7 +14,7 @@ interface Conversation {
 }
 
 const CalendarScreen: React.FC = () => {
-  const { date } =  useLocalSearchParams();
+  const { date } = useLocalSearchParams();
   const parsedDate = Array.isArray(date) ? date[0] : date;
   const [selectedDate, setSelectedDate] = useState<Date>(new Date(parseFloat(parsedDate)));
   const [showMonthView, setShowMonthView] = useState<boolean>(false);
@@ -179,23 +179,23 @@ const CalendarScreen: React.FC = () => {
       </View>
 
       <View className="px-4">
-        <View className="flex-row grid grid-cols-7 gap-1 mb-2">
+        <View className="flex-row mb-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((weekday) => (
-            <View key={weekday} className="text-sm font-semibold text-center py-2">
-              <Text>{weekday}</Text>
+            <View key={weekday} className="flex-1 items-center">
+              <Text className="text-sm font-semibold text-gray-500">{weekday}</Text>
             </View>
           ))}
         </View>
 
-        <View className="flex-row grid grid-cols-7 gap-1">
+        <View className="flex-row grid grid-cols-7 gap-2 m-auto">
           {calendarDays.map((day, index) => (
             <TouchableOpacity
               key={index}
-              className={getDayClasses(day)}
+              className={`${getDayClasses(day)} w-1/7 aspect-square items-center justify-center`}
               onPress={() => handleDayPress(day)}
               disabled={isAfter(day, new Date())}
             >
-              <Text className={getDayTextClasses(day)}>
+              <Text className={`${getDayTextClasses(day)} text-center`}>
                 {format(day, 'd')}
               </Text>
             </TouchableOpacity>
