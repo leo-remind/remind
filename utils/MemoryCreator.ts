@@ -118,7 +118,7 @@ export class MemoryCreator {
   
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4o",
       response_format: { type: "json_object" },
     });
   

@@ -79,7 +79,9 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await db.runAsync(`
     INSERT INTO PERSONS (name, birthdate, relation, audio, photo_data)
     VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?, ?),
-    ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);
+    ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);,
+    ("Chaitanya Modi", 2003-11-7, "Daughter", ?, ?);
+    ("Arnav Rustagi", 2004-09-02, "Son", ?, ?);
   `, audioData, imgData, audioData2, imgData);
 
 
