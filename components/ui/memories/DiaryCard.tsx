@@ -42,7 +42,7 @@ const Memory: React.FC<MemoryProps> = ({ day, month, year }) => {
         {memory.name}
       </Text>
       <Text className="text-xl text-white/80">
-        {memory.summary}
+        {memory.summary.length > 200 ? `${memory.summary.substring(0, 200)}...` : memory.summary}
       </Text>
     </>
   )

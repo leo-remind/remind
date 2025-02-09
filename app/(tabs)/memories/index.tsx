@@ -6,7 +6,7 @@ import { addDummyData } from "@/lib/conversations";
 import { populateDummyData } from "@/utils/DummyDataCreator";
 
 export default function MemoriesScreen() {
-  
+
   return <SafeAreaView className="flex-1 bg-white">
     <ScrollView>
       <View className="flex-row justify-between items-start px-8 pt-8 mt-2">
@@ -39,11 +39,11 @@ export default function MemoriesScreen() {
 
 function Trips() {
   const db = useSQLiteContext();
-  let trips = db.getAllSync(`SELECT start_date, end_date, trip_name, url FROM trips`)
+  let trips = db.getAllSync(`SELECT start_date, end_date, trip_name FROM trips`)
 
   return <View className="bg-white overflow-y-auto">
     <TripCarousel items={ trips.map( (trip) => {
-      return {"src" : trip.url, "heading": trip.trip_name, "subheading" : formatDateRange(trip.start_date, trip.end_date)}})}/>
+      return {"heading": trip.trip_name, "subheading" : formatDateRange(trip.start_date, trip.end_date)}})}/>
   </View>
 }
 
