@@ -26,12 +26,14 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     console.log("adding dummy data: started");
     await db.runAsync("DELETE FROM persons;");
     await db.runAsync("DELETE FROM reminders;");
+    await db.runAsync("DELETE FROM trips;");
 
     const [{ localUri }] = await Asset.loadAsync(require("../assets/audio/arb.wav"))
     const [{ localUri: localUriImg }] = await Asset.loadAsync(require("../assets/images/group_14.png"))
+    const [{ localUri: localUriImgPjr }] = await Asset.loadAsync(require("../assets/images/pjr.jpeg"))
     const [{ localUri: localUri2 }] = await Asset.loadAsync(require("../assets/audio/pjr.wav"))
     const [{ localUri: localUriAmerica }] = await Asset.loadAsync(require("../assets/audio/america.wav"))
-    if (!localUri || !localUriImg || !localUri2 || !localUriAmerica) {
+    if (!localUri || !localUriImgPjr || !localUriImg || !localUri2 || !localUriAmerica) {
       console.log("no uri");
       return
     }
@@ -39,6 +41,8 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     const audioFileURI2 = FileSystem.documentDirectory + "pjr.wav";
     const audioFileURIAmer = FileSystem.documentDirectory + "america.wav";
     const imgFile = FileSystem.documentDirectory + "group_14.png";
+    const pjrImgFile = FileSystem.documentDirectory + "pjr.jpeg";
+
     await FileSystem.copyAsync({
       from: localUri,
       to: audioFileURI
@@ -46,6 +50,10 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await FileSystem.copyAsync({
       from: localUriImg,
       to: imgFile
+    })
+    await FileSystem.copyAsync({
+      from: localUriImgPjr,
+      to: pjrImgFile
     })
 
     await FileSystem.copyAsync({
@@ -75,6 +83,12 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const imgData = new Uint8Array(Buffer.from(imgDataB6, "base64"));
 
+    const imgDataB6Pjr = await FileSystem.readAsStringAsync(pjrImgFile, {
+      encoding: FileSystem.EncodingType.Base64
+    });
+
+    const imgDataPjr = new Uint8Array(Buffer.from(imgDataB6Pjr, "base64"));
+
 
     await db.runAsync(`
     INSERT INTO PERSONS (name, birthdate, relation, audio, photo_data)
@@ -82,7 +96,7 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);,
     ("Chaitanya Modi", 2003-11-7, "Daughter", ?, ?);
     ("Arnav Rustagi", 2004-09-02, "Son", ?, ?);
-  `, audioData, imgData, audioData2, imgData);
+  `, audioData, imgData, audioData2, imgDataPjr);
 
 
     const d1 = new Date();
@@ -98,6 +112,19 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       (?, "daily", "someday", 1, "Call Your Mom.", "Talk about the hackaton you participated in"),
       (?, "daily", "someday", 1, "Submit KRR Assignment", "Or you'll lose marks");
     `, d1.toISOString(), d2.toISOString(), d3.toISOString())
+
+    const experiences = [
+      "In Goa, you wandered along the golden beaches, sipped feni at a seaside shack, visited old Portuguese churches, and watched the sun dip into the Arabian Sea as fishermen pulled in their nets.",
+      "In Bandhavgarh, you rose before dawn for safaris, spotting tigers slinking through the tall grass, listened to the jungle wake up, and sat by the campfire at night, trading stories under a starlit sky.",
+      "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
+    ];
+    await db.runAsync(`
+    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary)
+    VALUES
+      ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
+      ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextVector(experiences[1])}"),
+      ("Raipur", 2023-11-12, 2023-11-15, "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", "${experiences[2]}", "${sqlTextVector(experiences[2])}");
+    `)
     console.log("added dummy data");
 
   } catch (error) {
@@ -121,11 +148,11 @@ const tryAddConv = async (db: SQLiteDatabase) => {
 
   const audioData = new Uint8Array(Buffer.from(audioDataB64, "base64"));
 
-  console.log("adding conv")
+  // console.log("adding conv")
   await addConversation(db, audioData, '', '')
-  console.log("adding conv done")
-  console.log("convos:", await db.getAllAsync("SELECT * FROM conversations;"))
-  console.log("convos:", await db.getAllAsync("SELECT * FROM person_conversations; "))
+  console.log("Added conv done")
+  // console.log("convos:", await db.getAllAsync("SELECT * FROM conversations;"))
+  // console.log("convos:", await db.getAllAsync("SELECT * FROM person_conversations; "))
 }
 
 const wavToBlob = (arr: Uint8Array, fname: string): Blob => {
@@ -167,11 +194,11 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
   try {
     const creationTime = new Date().toISOString();
 
-    console.log("yo");
+    // console.log("yo");
     const persons: { 'id': number, 'name': string, 'audio': Uint8Array }[] = await db.getAllAsync("SELECT * FROM persons");
     const ret: { 'name': string } | null = await db.getFirstAsync("SELECT * FROM persons WHERE id = 0;")
     const userName = ret ? ret.name : "person_0";
-    console.log("user is", userName)
+    console.log("[conversation]: user is", userName)
 
     const formData = new FormData()
     for (let person of persons) {
@@ -189,7 +216,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
       responseType: 'json'
     })
 
-    console.log("received response from sarvam")
+    // console.log("received response from sarvam")
     const entries: SarvamEntry[] = response.data.diarized_transcript.entries
 
     let mapping: Map<string, { 'id': number, 'name': string }> = new Map()
@@ -200,7 +227,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
       idx += 1
     }
 
-    console.log("building convoarr")
+    // console.log("building convoarr")
     let convoArr = []
     for (; idx < entries.length; idx++) {
       const who = mapping.get(entries[idx].speaker_id);
@@ -209,8 +236,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
 
     let fullConvo = convoArr.join("\n\n")
     const summary = await generateConvSummary(fullConvo, userName)
-    console.log("summarized:", summary)
-
+    console.log("[conversation]: summarized:", summary)
 
     const result = await db.getFirstAsync(`
       SELECT id 
@@ -231,14 +257,18 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
 
 
     for (let [_, value] of mapping) {
-      console.log(value.name, "is involved in convo")
+      console.log("[conversation]: ", value.name, "is involved in convo")
       await db.runAsync("INSERT INTO person_conversations (person_id, conversation_id) VALUES (?, ?);", value.id, insertionResult.lastInsertRowId);
     }
     return true
 
   } catch (error) {
-    // console.log(`errored ${error}`, JSON.stringify(error))
-    console.log("big error: most likely internal server error.");
+    console.log(`errored ${error}`, JSON.stringify(error))
+    // console.log("big error: most likely internal server error.");
     return false
   }
 }
+function sqlTextVector(arg0: string) {
+  throw new Error("Function not implemented.");
+}
+

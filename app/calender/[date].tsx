@@ -95,25 +95,25 @@ const CalendarScreen: React.FC = () => {
       id: 1,
       person: "Arnav",
       text: "You talked to Arnav about shopping",
-      imageUrl: "https://ichef.bbci.co.uk/images/ic/480xn/p02n576b.jpg"
+      imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/38/Flower_July_2011-2_1_cropped.jpg"
     },
     {
       id: 2,
       person: "Arbaaz",
       text: "Arbaaz told you about his Bali trip",
-      imageUrl: "https://ichef.bbci.co.uk/images/ic/480xn/p02n576b.jpg"
+      imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/38/Flower_July_2011-2_1_cropped.jpg"
     },
     {
       id: 3,
       person: "Sarah",
       text: "Had a conversation about Good Pizza, Great Pizza with Pranjal",
-      imageUrl: "https://ichef.bbci.co.uk/images/ic/480xn/p02n576b.jpg"
+      imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/38/Flower_July_2011-2_1_cropped.jpg"
     },
     {
       id: 4,
       person: "Mom",
       text: "Your mom talked to you about your father's birthday",
-      imageUrl: "https://ichef.bbci.co.uk/images/ic/480xn/p02n576b.jpg"
+      imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/38/Flower_July_2011-2_1_cropped.jpg"
     }
   ];
 

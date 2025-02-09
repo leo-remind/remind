@@ -1,10 +1,12 @@
 import DiaryCard from "@/components/ui/memories/DiaryCard";
 import { useSQLiteContext } from "expo-sqlite";
 import { StyleSheet, Image, Platform, View, Text, SafeAreaView, ScrollView } from "react-native";
-import React from "react"
+import React, { useLayoutEffect } from "react"
 import { addDummyData } from "@/lib/conversations";
+import { populateDummyData } from "@/utils/DummyDataCreator";
 
 export default function MemoriesScreen() {
+
   return <SafeAreaView className="flex-1 bg-white">
     <ScrollView>
       <View className="flex-row justify-between items-start px-8 pt-8 mt-2">
@@ -16,18 +18,17 @@ export default function MemoriesScreen() {
       </View>
       <View className="flex flex-row justify-between px-8 mb-2">
         <Text className="text-xl font-bold font-sans">Calender</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
       </View>
       <DiaryCard message="" className="bg-light-orange" />
       <View className="flex flex-row justify-between px-8 mt-4 mb-2">
         <Text className="text-xl font-bold font-sans">Trips</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
+        <Text className="text-orange font-sans text-xl">List All</Text>
       </View>
       <Trips />
 
       <View className="flex flex-row justify-between px-8 mt-4 mb-2">
         <Text className="text-xl font-bold font-sans">People</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
+        <Text className="text-orange font-sans text-xl">List All</Text>
       </View>
       <People />
     </ScrollView>
@@ -36,15 +37,33 @@ export default function MemoriesScreen() {
 }
 
 function Trips() {
+  const db = useSQLiteContext();
+  let trips = db.getAllSync(`SELECT start_date, end_date, trip_name FROM trips`)
+
   return <View className="bg-white overflow-y-auto">
-    <TripCarousel items={[
-      { "src": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", "heading": "Mohalsssi", "subheading": "19th-20th Feb" },
-      { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Bangcok", "subheading": "19th-20th Feb" },
-      { "src": "https://upload.wikimedia.org/wikipedia/en/f/fa/Binding_of_isaac_header.jpg", "heading": "Bangcok", "subheading": "19th-20th Feb" },
-    ]} />
+    <TripCarousel items={trips.map((trip) => {
+      return { "heading": trip.trip_name, "subheading": formatDateRange(trip.start_date, trip.end_date) }
+    })} />
   </View>
 }
 
+function formatDateRange(start_date, end_date) {
+  const getOrdinal = (day) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
+
+  const day1 = start_date.getDate();
+  const day2 = end_date.getDate();
+  const month = end_date.toLocaleString('default', { month: 'long' });
+
+  return `${day1}${getOrdinal(day1)} - ${day2}${getOrdinal(day2)} ${month}`;
+}
 
 const imgToUri = (arr: null | Uint8Array): string => {
   if (!arr) {
@@ -66,16 +85,11 @@ function People() {
     return { "imageUri": imgToUri(photo_data), "text": name }
   })
 
-  return <View>< PeopleGrid
-    profiles={
-      // [
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },]
-      parsedPersons
-    }
-  />
-  </View >;
+  return (
+    <View className="m-auto">
+      <PeopleGrid profiles={parsedPersons} />
+    </View >
+  )
 }
 
 interface People {
@@ -100,7 +114,7 @@ const PeopleGrid: React.FC<PeopleGridProps> = ({
   };
 
   return (
-    <View className="flex flex-wrap gap-8 flex-row w-96 justify-center">
+    <View className="flex mt-4 flex-wrap gap-8 flex-row w-96 justify-center">
       {profiles.map((profile, index) => (
         <View key={index} className="flex flex-col items-center">
           <View
