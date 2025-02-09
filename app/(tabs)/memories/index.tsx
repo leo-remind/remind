@@ -4,6 +4,7 @@ import { StyleSheet, Image, Platform, View, Text, SafeAreaView, ScrollView } fro
 import React, { useLayoutEffect } from "react"
 import { addDummyData } from "@/lib/conversations";
 import { populateDummyData } from "@/utils/DummyDataCreator";
+import { Link } from "expo-router";
 
 export default function MemoriesScreen() {
 
@@ -18,18 +19,16 @@ export default function MemoriesScreen() {
       </View>
       <View className="flex flex-row justify-between px-8 mb-2">
         <Text className="text-xl font-bold font-sans">Calender</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
       </View>
       <DiaryCard message="" className="bg-light-orange" />
       <View className="flex flex-row justify-between px-8 mt-4 mb-2">
         <Text className="text-xl font-bold font-sans">Trips</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
       </View>
       <Trips />
 
       <View className="flex flex-row justify-between px-8 mt-4 mb-2">
         <Text className="text-xl font-bold font-sans">People</Text>
-        <Text className="underline text-orange font-sans text-xl">List All</Text>
+        <Text className="text-orange font-sans text-xl">List All</Text>
       </View>
       <People />
     </ScrollView>
@@ -39,30 +38,32 @@ export default function MemoriesScreen() {
 
 function Trips() {
   const db = useSQLiteContext();
-  let trips = db.getAllSync(`SELECT start_date, end_date, trip_name FROM trips`)
+  let trips = db.getAllSync(`SELECT id, start_date, url, end_date, trip_name FROM trips`)
 
+  console.log("we got trips", trips)
   return <View className="bg-white overflow-y-auto">
-    <TripCarousel items={ trips.map( (trip) => {
-      return {"heading": trip.trip_name, "subheading" : formatDateRange(trip.start_date, trip.end_date)}})}/>
+    <TripCarousel items={trips.map((trip) => {
+      return { "id": trips.id, "heading": trip.trip_name, "subheading": formatDateRange(new Date(trip.start_date), new Date(trip.end_date)), "src": trip.url }
+    })} />
   </View>
 }
 
 function formatDateRange(start_date, end_date) {
-    const getOrdinal = (day) => {
-        if (day > 3 && day < 21) return 'th';
-        switch (day % 10) {
-            case 1: return 'st';
-            case 2: return 'nd';
-            case 3: return 'rd';
-            default: return 'th';
-        }
-    };
+  const getOrdinal = (day) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
 
-    const day1 = start_date.getDate();
-    const day2 = end_date.getDate();
-    const month = end_date.toLocaleString('default', { month: 'long' });
-    
-    return `${day1}${getOrdinal(day1)} - ${day2}${getOrdinal(day2)} ${month}`;
+  const day1 = start_date.getDate();
+  const day2 = end_date.getDate();
+  const month = end_date.toLocaleString('default', { month: 'long' });
+
+  return `${day1}${getOrdinal(day1)} - ${day2}${getOrdinal(day2)} ${month}`;
 }
 
 const imgToUri = (arr: null | Uint8Array): string => {
@@ -85,16 +86,11 @@ function People() {
     return { "imageUri": imgToUri(photo_data), "text": name }
   })
 
-  return <View>< PeopleGrid
-    profiles={
-      // [
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },
-      //   { "imageUrl": "https://res.cloudinary.com/devolver-digital/image/upload/v1637791227/mothership/enter-the-gungeon/mothership-etg-poster.png", text: "Arnav Rustagi" },]
-      parsedPersons
-    }
-  />
-  </View >;
+  return (
+    <View className="m-auto">
+      <PeopleGrid profiles={parsedPersons} />
+    </View >
+  )
 }
 
 interface People {
@@ -119,7 +115,7 @@ const PeopleGrid: React.FC<PeopleGridProps> = ({
   };
 
   return (
-    <View className="flex flex-wrap gap-8 flex-row w-96 justify-center">
+    <View className="flex mt-4 flex-wrap gap-8 flex-row w-96 justify-center">
       {profiles.map((profile, index) => (
         <View key={index} className="flex flex-col items-center">
           <View
@@ -146,6 +142,7 @@ interface CarouselItem {
   src: string;
   heading: string;
   subheading: string;
+  id: number
 }
 
 interface TripCarouselProps {
@@ -157,32 +154,34 @@ const TripCarousel: React.FC<TripCarouselProps> = ({ items }) => {
 
   return (
     <ScrollView horizontal={true} className="w-full overflow-x-auto overflow-y-none pl-2">
-      <View className="flex gap-4 p-4 flex-row">
-        {items.map((item, index) => (
-          <View
-            key={index}
-            className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
-          >
-            <Image
-              source={{ uri: item.src }}
-              alt={item.heading}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
-              }}
-            />
-            <View className="absolute bottom-0 left-0 p-4">
-              <Text className="text-3xl font-bold font-sans text-white">
-                {item.heading}
-              </Text>
-              <Text className="text-lg  font-sans text-white">
-                {item.subheading}
-              </Text>
+      <Link href={{ pathname: "/memories/trip/[tid]", tid: item.id }}>
+        <View className="flex gap-4 p-4 flex-row">
+          {items.map((item, index) => (
+            <View
+              key={index}
+              className="relative flex-shrink-0 w-64 h-96 rounded-xl overflow-hidden"
+            >
+              <Image
+                source={{ uri: item.src }}
+                alt={item.heading}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover"
+                }}
+              />
+              <View className="absolute bottom-0 left-0 p-4">
+                <Text className="text-3xl font-bold font-sans text-white">
+                  {item.heading}
+                </Text>
+                <Text className="text-lg  font-bold font-sans text-white">
+                  {item.subheading}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+          ))}
+        </View>
+      </Link>
+    </ScrollView >
   );
 };

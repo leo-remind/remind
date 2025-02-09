@@ -6,6 +6,7 @@ import * as FileSystem from 'expo-file-system'
 import { Asset } from "expo-asset";
 
 import env from "../env.json"
+import { createImageEmbedding, createTextEmbedding, sqlTextEmbedding } from "@/utils/rag/rag";
 
 
 // const CONCATENATION_SERVER_URL = "https://remind-backend-cl32.onrender.com/concatenate-wav/"
@@ -30,9 +31,10 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const [{ localUri }] = await Asset.loadAsync(require("../assets/audio/arb.wav"))
     const [{ localUri: localUriImg }] = await Asset.loadAsync(require("../assets/images/group_14.png"))
+    const [{ localUri: localUriImgPjr }] = await Asset.loadAsync(require("../assets/images/pjr.jpeg"))
     const [{ localUri: localUri2 }] = await Asset.loadAsync(require("../assets/audio/pjr.wav"))
     const [{ localUri: localUriAmerica }] = await Asset.loadAsync(require("../assets/audio/america.wav"))
-    if (!localUri || !localUriImg || !localUri2 || !localUriAmerica) {
+    if (!localUri || !localUriImgPjr || !localUriImg || !localUri2 || !localUriAmerica) {
       console.log("no uri");
       return
     }
@@ -40,6 +42,8 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     const audioFileURI2 = FileSystem.documentDirectory + "pjr.wav";
     const audioFileURIAmer = FileSystem.documentDirectory + "america.wav";
     const imgFile = FileSystem.documentDirectory + "group_14.png";
+    const pjrImgFile = FileSystem.documentDirectory + "pjr.jpeg";
+
     await FileSystem.copyAsync({
       from: localUri,
       to: audioFileURI
@@ -47,6 +51,10 @@ export const addDummyData = async (db: SQLiteDatabase) => {
     await FileSystem.copyAsync({
       from: localUriImg,
       to: imgFile
+    })
+    await FileSystem.copyAsync({
+      from: localUriImgPjr,
+      to: pjrImgFile
     })
 
     await FileSystem.copyAsync({
@@ -76,12 +84,20 @@ export const addDummyData = async (db: SQLiteDatabase) => {
 
     const imgData = new Uint8Array(Buffer.from(imgDataB6, "base64"));
 
+    const imgDataB6Pjr = await FileSystem.readAsStringAsync(pjrImgFile, {
+      encoding: FileSystem.EncodingType.Base64
+    });
+
+    const imgDataPjr = new Uint8Array(Buffer.from(imgDataB6Pjr, "base64"));
+
 
     await db.runAsync(`
     INSERT INTO PERSONS (name, birthdate, relation, audio, photo_data)
     VALUES ("Arbaaz Shafiq", 2003-05-13, "Father", ?, ?),
-    ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);
-  `, audioData, imgData, audioData2, imgData);
+    ("Pranjal Rastogi", 2002-04-12, "Uncle", ?, ?);,
+    ("Chaitanya Modi", 2003-11-7, "Daughter", ?, ?);
+    ("Arnav Rustagi", 2004-09-02, "Son", ?, ?);
+  `, audioData, imgData, audioData2, imgDataPjr);
 
 
     const d1 = new Date();
@@ -98,15 +114,17 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       (?, "daily", "someday", 1, "Submit KRR Assignment", "Or you'll lose marks");
     `, d1.toISOString(), d2.toISOString(), d3.toISOString())
 
-      const experiences = [
-        "In Goa, you wandered along the golden beaches, sipped feni at a seaside shack, visited old Portuguese churches, and watched the sun dip into the Arabian Sea as fishermen pulled in their nets.",
-        "In Bandhavgarh, you rose before dawn for safaris, spotting tigers slinking through the tall grass, listened to the jungle wake up, and sat by the campfire at night, trading stories under a starlit sky.",
-        "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
-      ];
+    const experiences = [
+      "In Goa, you wandered along the golden beaches, sipped feni at a seaside shack, visited old Portuguese churches, and watched the sun dip into the Arabian Sea as fishermen pulled in their nets.",
+      "In Bandhavgarh, you rose before dawn for safaris, spotting tigers slinking through the tall grass, listened to the jungle wake up, and sat by the campfire at night, trading stories under a starlit sky.",
+      "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
+    ];
+
+    console.log("tripping")
     await db.runAsync(`
-    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary)
+    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary, summary_vector)
     VALUES
-      ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
+      ("Goa", 2023-04-04, 2023-04-08, "https://blog.bedandchai.com/wp-content/uploads/2015/12/World___India_Relax_on_the_beach_in_Arambol_068131_.jpg" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
       ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextVector(experiences[1])}"),
       ("Raipur", 2023-11-12, 2023-11-15, "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", "${experiences[2]}", "${sqlTextVector(experiences[2])}");
     `)
@@ -237,7 +255,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     const insertionResult = await db.runAsync(`
       INSERT INTO conversations (summary, summary_vector, transcript_start, transcript_end, location_id)
       VALUES (?, ?, ?, ?, ?);
-    `, summary || "", new Uint8Array(), transcriptStart, transcriptEnd, result?.id || null);
+    `, summary || "", await sqlTextEmbedding(summary || ""), transcriptStart, transcriptEnd, result?.id || null);
     console.log("inserted into", insertionResult.lastInsertRowId)
 
 
@@ -253,7 +271,9 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     return false
   }
 }
-function sqlTextVector(arg0: string) {
-  throw new Error("Function not implemented.");
+
+async function sqlTextVector(text: string) {
+  let vector = await createTextEmbedding(text);
+  return `[${vector}]`
 }
 
