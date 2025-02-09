@@ -125,33 +125,38 @@ Generate memories in JSON format with the following structure:
       "type": "one of: conversation, activity, event, milestone",
       "name": "A concise, meaningful title that captures the essence of this memory",
       "summary": "A detailed description focusing on the significance of this interaction or event",
-      "date": "A natural language description of when this occurred"
+      "date": "2024-02-09T15:30:00Z"
     }
   ]
 }`;
 
-    const completion = await openai.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "gpt-4-turbo-preview",
-      response_format: { type: "json_object" },
-    });
+const completion = await openai.chat.completions.create({
+  messages: [{ role: "user", content: prompt }],
+  model: "gpt-4-turbo-preview",
+  response_format: { type: "json_object" },
+});
 
-    if (!completion.choices[0].message.content) {
-      throw new Error("Completion content is null");
-    }
-    const response = JSON.parse(completion.choices[0].message.content);
+if (!completion.choices[0].message.content) {
+  throw new Error("Completion content is null");
+}
+const response = JSON.parse(completion.choices[0].message.content);
 
-    console.log(completion.choices[0].message.content);
-    console.log(response.date);
-    
-    return {
-      type: response.type,
-      name: response.name,
-      summary: response.summary,
-      date: response.date,
-      memory_start: conversations[0].time_created,
-      memory_end: conversations[conversations.length - 1].time_created,
-    };
+console.log(completion.choices[0].message.content);
+
+if (!response.memories || !Array.isArray(response.memories)) {
+  throw new Error("Invalid response format: memories array not found");
+}
+
+// Process the first memory in the array
+const memory = response.memories[0];
+return {
+  type: memory.type,
+  name: memory.name,
+  summary: memory.summary,
+  date: new Date(memory.date),
+  memory_start: conversations[0].time_created,
+  memory_end: conversations[conversations.length - 1].time_created,
+};
   }
 
   private async saveMemory(
