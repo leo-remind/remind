@@ -7,6 +7,8 @@ import { Asset } from "expo-asset";
 
 import env from "../env.json"
 
+import { sqlTextEmbedding } from '@/utils/rag/rag';
+
 
 // const CONCATENATION_SERVER_URL = "https://remind-backend-cl32.onrender.com/concatenate-wav/"
 const CONCATENATION_SERVER_URL = "http://10.0.2.2:8000/concatenate-wav/"
@@ -119,11 +121,11 @@ export const addDummyData = async (db: SQLiteDatabase) => {
       "In Raipur, you strolled through the bustling markets, sampled spicy chana chaat, visited the grand Mahant Ghasidas Museum, and spent quiet evenings reminiscing at Marine Drive by the Telibandha lake."
     ];
     await db.runAsync(`
-    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary)
+    INSERT INTO trips (trip_name, start_date, end_date, url, trip_summary, summary_vector)
     VALUES
-      ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextVector(experiences[0])}"),
-      ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextVector(experiences[1])}"),
-      ("Raipur", 2023-11-12, 2023-11-15, "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", "${experiences[2]}", "${sqlTextVector(experiences[2])}");
+      ("Goa", 2023-04-04, 2023-04-08,"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/33/fc/f0/goa.jpg?w=1400&h=1400&s=1" , "${experiences[0]}", "${sqlTextEmbedding(experiences[0])}"),
+      ("Bandhavgarh", 2024-01-01, 2024-01-10, "https://www.vivantahotels.com/content/dam/thrp/destinations/Bandhavgarh/Intro-16x7/Intro-16x7.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", "${experiences[1]}", "${sqlTextEmbedding(experiences[1])}"),
+      ("Raipur", 2023-11-12, 2023-11-15, "https://media2.thrillophilia.com/images/photos/000/205/310/original/1589467756_shutterstock_1208258626.jpg?gravity=center&width=1280&height=642&crop=fill&quality=auto&fetch_format=auto&flags=strip_profile&format=jpg&sign_url=true", "${experiences[2]}", "${sqlTextEmbedding(experiences[2])}");
     `)
     console.log("added dummy data");
 
@@ -267,7 +269,4 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
     // console.log("big error: most likely internal server error.");
     return false
   }
-}
-function sqlTextVector(arg0: string) {
-  throw new Error("Function not implemented.");
 }

@@ -38,7 +38,7 @@ export default function MemoriesScreen() {
 function Trips() {
   const db = useSQLiteContext();
   let trips = db.getAllSync(`SELECT id, start_date, url, end_date, trip_name FROM trips;`)
-
+  
   console.log("we got trips", trips)
   return <View className="bg-white overflow-y-auto">
     <TripCarousel items={trips.map((trip) => {

@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useLayoutEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isToday, isAfter, isSameMonth, addMonths, subMonths } from 'date-fns';
 // import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 
 import "../../global.css";
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 
 interface Conversation {
   id: number;
@@ -24,6 +24,15 @@ const CalendarScreen: React.FC = () => {
   const monthEnd = useMemo(() => endOfMonth(selectedDate), [selectedDate]);
   const weekStart = useMemo(() => startOfWeek(selectedDate), [selectedDate]);
   const weekEnd = useMemo(() => endOfWeek(selectedDate), [selectedDate]);
+
+  const navigation = useNavigation();
+
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: `Memory: ${format(new Date(parseFloat(parsedDate)), 'dd MMMM yyyy')}`, // Customize title based on `mid`
+    });
+  }, [navigation, date]);
 
   const calendarDays = useMemo(() => {
     if (showMonthView) {
@@ -116,6 +125,13 @@ const CalendarScreen: React.FC = () => {
       imageUrl: "https://upload.wikimedia.org/wikipedia/commons/3/38/Flower_July_2011-2_1_cropped.jpg"
     }
   ];
+
+
+  // const db = useSQLiteContext();
+
+  // const conversations = db.getAllSync<Conversation>(`SELECT * FROM conversations WHERE time_created = ${selectedDate.getTime()}`);
+
+  // console.log(conversations);
 
   const renderConversationSummary = () => {
     if (!showMonthView) {
