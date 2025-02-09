@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, Pressable, Text, View, Button, ScrollView } from "react-native";
+import { Image, StyleSheet, Platform, Pressable, Text, View, Button, ScrollView, TouchableOpacity } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
@@ -11,9 +11,10 @@ import { insertDummyConversations } from "@/utils/dummy";
 import { migrateDbIfNeeded } from "@/utils/database";
 import { useSQLiteContext } from "expo-sqlite";
 import ReminderItem from "@/components/ReminderItem";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { addDummyData } from "@/lib/conversations";
 
+import { AddReminderModal } from "@/components/AddReminder";
 export default function HomeScreen() {
 
   const db = useSQLiteContext();
@@ -41,6 +42,7 @@ export default function HomeScreen() {
     return { remg: hours == 0 ? `${minutes} mins` : `${hours} hours - ${minutes} mins`, text: reminder_text, subtitle: subtitle, id: id }
   })
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView>
@@ -54,9 +56,13 @@ export default function HomeScreen() {
         <DiaryCard message="" className="bg-light-blue mt-6" />
         <View className="px-8 pt-8">
           <Text className="font-sans text-3xl mb-4 font-bold text-black/50">Reminders</Text>
-          <View className="bg-light-blue/50 p-4 rounded-xl">
+          <TouchableOpacity onPress={() => setIsModalVisible(true)} className="bg-light-blue/50 p-4 rounded-xl">
             <Text className="text-4xl font-bold color-blue m-auto">+</Text>
-          </View>
+          </TouchableOpacity>
+          <AddReminderModal
+            isVisible={isModalVisible}
+            onClose={() => setIsModalVisible(false)}
+          />
         </View>
         {
           reminders.map(
