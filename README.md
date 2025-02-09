@@ -1,6 +1,11 @@
-# ReMind
-![Logo]("./assets/images/logo.png")
+# <center> ReMind </center>
+<p align="center">
+    <img src="./assets/images/logo.png" alt="Logo" />
+</p>
+
+<p align="center">
 A AI-Powered Virtual Memory System for pateints of Dementia.
+</p>
 
 | Home Screen | Fun & Useful Games | Trip Screen |
 |-------------|--------------------|-------------|
