@@ -30,7 +30,7 @@ interface Person {
 interface Memory {
   id?: number;
   type: string;
-  dates: string;
+  date: Date;
   name: string;
   summary: string;
   memory_start: string;
@@ -107,7 +107,7 @@ Generate memories in JSON format with the following structure:
       "type": "one of: conversation, activity, event, milestone",
       "name": "A concise, meaningful title that captures the essence of this memory",
       "summary": "A detailed description focusing on the significance of this interaction or event",
-      "dates": "A natural language description of when this occurred"
+      "date": "A natural language description of when this occurred"
     }
   ]
 }`;
@@ -127,7 +127,7 @@ Generate memories in JSON format with the following structure:
       type: response.type,
       name: response.name,
       summary: response.summary,
-      dates: response.dates,
+      date: response.date,
       memory_start: timeRange.start.toISOString(),
       memory_end: timeRange.end.toISOString()
     };
@@ -144,11 +144,11 @@ Generate memories in JSON format with the following structure:
 
     try {
       const result = await db.runAsync(
-        `INSERT INTO memory (type, dates, name, summary, memory_start, memory_end, trip_id)
+        `INSERT INTO memory (type, date, name, summary, memory_start, memory_end, trip_id)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           memory.type,
-          memory.dates,
+          memory.date.toISOString(),
           memory.name,
           memory.summary,
           memory.memory_start,
