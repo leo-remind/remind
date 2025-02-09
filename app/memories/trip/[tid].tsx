@@ -30,16 +30,38 @@ function formatDateRange(start_date, end_date) {
 }
 
 function App() {
-    const { query } = useLocalSearchParams();
+    const { tid } = useLocalSearchParams();
     const db = useSQLiteContext();
-    let trips = db.getAllSync(`SELECT start_date, end_date, trip_name, url FROM trips`)
+    let trip = db.getFirstSync(`SELECT * FROM trips WHERE id = ${tid}`)
 
     return (
         <SafeAreaView className="flex-1 bg-white">
             <ScrollView className="p-8 flex flex-col">
-                {
-                    trips.map((trip) => <GameCard header={trip.trip_name} subtitle={formatDateRange(new Date(trip.start_date), new Date(trip.end_date))} imageUrl={trip.url} />)
-                }
+                <View className="flex flex-col">
+                    <View className="w-full h-96">
+                        <Image source={{uri: trip.url }} className="w-full h-full object-fit"/>
+                        <View className="absolute bottom-4 left-4">
+                            <Text className="text-2xl font-bold">
+                                {trip.trip_name}
+                            </Text>
+                            <Text className="text-lg font-semibold">
+                                formatDateRange(new Date(trip.start_date), new Date(trip.end_date))
+                            </Text>
+                        </View>
+                    </View>
+                            <Text className="text-xl font-bold">Summary</Text>
+                            <Text className="text-lg">
+                                {trip.trip_summary}
+                            </Text>
+                    <View className="flex-row flex flex-wrap">
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] h-96 aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] h-96 aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+        <Image source={{ uri: "https://enterthegungeon.wiki.gg/images/thumb/9/96/SS_2.png/400px-SS_2.png" }} className="w-[33%] aspect-square" />
+      </View>
+                </View>
             </ScrollView>
         </SafeAreaView>
     )
