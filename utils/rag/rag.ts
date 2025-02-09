@@ -76,8 +76,14 @@ async function retrieveRelevantConversations(db: SQLiteDatabase, queryEmbedding:
         `SELECT id, summary_vector FROM conversations`
     );
 
+    const allRowsTrips: Array<ConversationRow> = await db.getAllAsync(
+        `SELECT id, summary_vector FROM trips`
+    );
+
+    let netRows = allRows.concat(allRowsTrips);
+
     const sortedRows: Array<VectorResponse> = await Promise.all(
-        allRows.map(async row => ({ 
+        netRows.map(async row => ({ 
             id: row.id,
             vector: new Float32Array(eval(row.summary_vector)),
             similarity: cosineSimilarity(
@@ -188,4 +194,14 @@ export async function createTextEmbedding(text: string): Promise<Float32Array> {
     console.log("done")
 
     return new Float32Array(embedding.data[0].embedding);
+}
+
+export async function sqlTextEmbedding(text: string) {
+    let vector = await createTextEmbedding(text)
+    return `[${vector}]`
+}
+
+export async function sqlImageEmbedding(image: Blob) {
+    let vector = await createImageEmbedding(image)
+    return `[${vector}]`
 }
