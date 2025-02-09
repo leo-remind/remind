@@ -2,10 +2,10 @@ import { GameCard } from "@/components/GameCard";
 import PeopleGrid from "@/components/ui/memories/PeopleOverview";
 import { chat } from "@/utils/rag/rag";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Redirect, useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams, useNavigation } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { SQLiteAnyDatabase } from "expo-sqlite/build/NativeStatement";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useLayoutEffect, useState } from "react";
 import { Image, StyleSheet, Platform, Pressable, Text, View, Button, ScrollView, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -33,20 +33,30 @@ export default function Page() {
     const { tid } = useLocalSearchParams();
     console.log("GOT TID", tid)
     const db = useSQLiteContext();
-    let trip = db.runSync("SELECT * FROM trips WHERE id = ?;", tid)
-    console.log("GOT TRIP", trip)
+    let trip = db.getFirstSync("SELECT * FROM trips WHERE id = ?;", tid);
 
+    console.log("GOT TRIP", trip);
+
+    const navigation = useNavigation();
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            title: `Your Recent Trip!`, // Customize title based on `mid`
+        });
+    }, [navigation, tid]);
+
+    
     return (
         <SafeAreaView className="flex-1 bg-white">
             <ScrollView className="p-8 flex flex-col">
                 <View className="flex flex-col">
                     <View className="w-full h-96">
                         <Image source={{ uri: trip.url }} className="w-full h-full object-fit" />
-                        <View className="absolute bottom-4 left-4">
-                            <Text className="text-2xl font-bold">
+                        <View className="absolute bottom-4 left-4 bg-black/60 px-6 py-8">
+                            <Text className="text-2xl font-bold text-white">
                                 {trip.trip_name}
                             </Text>
-                            <Text className="text-lg font-semibold">
+                            <Text className="text-lg font-semibold text-white ">
                                 {formatDateRange(new Date(trip.start_date), new Date(trip.end_date))}
                             </Text>
                         </View>

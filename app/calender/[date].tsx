@@ -5,6 +5,7 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInte
 import "../../global.css";
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 
 interface Conversation {
   id: number;
@@ -127,11 +128,20 @@ const CalendarScreen: React.FC = () => {
   ];
 
 
-  // const db = useSQLiteContext();
+  const db = useSQLiteContext();
 
-  // const conversations = db.getAllSync<Conversation>(`SELECT * FROM conversations WHERE time_created = ${selectedDate.getTime()}`);
+  let dateLol = format(selectedDate, 'yyyy-MM-dd');
+  // let dateBeauty = dateLol.split("T")[0]
 
-  // console.log(conversations);
+  console.log(dateLol);
+  // const MemoryID = db.g
+  const conversationsDB = db.getAllSync(`SELECT * FROM conversations WHERE DATE(time_created) = "${dateLol}";`);
+  // const memory = db.getFirstSync("SELECT * FROM memory WHERE date = ? ORDER BY id DESC;", `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+  console.log("conversations", conversationsDB.length);
+
+  // const timeCreated = db.getAllSync(`SELECT DATE(time_created) FROM conversations;`);
+
+  // console.log("tc", timeCreated);
 
   const renderConversationSummary = () => {
     if (!showMonthView) {
@@ -145,21 +155,22 @@ const CalendarScreen: React.FC = () => {
           </View>
 
           <View className="bg-white rounded-xl p-4 shadow-sm">
-            {conversations.map((convo, index) => (
+            {conversationsDB.map((convo, index) => (
               <TouchableOpacity
                 key={convo.id}
-                onPress={() => handleConversationPress(convo)}
+                // onPress={() => handleConversationPress(convo)}
+                onPress={() => {}}
                 className={`flex flex-row items-center py-3 ${index !== conversations.length - 1 ? 'border-b border-gray-100' : ''
                   }`}
               >
-                <Image
+                {/* <Image
                   source={{ uri: convo.imageUrl }}
                   alt={convo.person}
                   className="w-12 h-12 rounded-full mr-3"
-                />
+                /> */}
                 <View className="flex-1">
                   <Text className="text-sm text-gray-800">
-                    {convo.text}
+                    {convo.summary}
                   </Text>
                 </View>
               </TouchableOpacity>
