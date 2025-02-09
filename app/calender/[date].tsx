@@ -173,6 +173,7 @@ const CalendarScreen: React.FC = () => {
                     {convo.summary}
                   </Text>
                 </View>
+              
               </TouchableOpacity>
             ))}
           </View>

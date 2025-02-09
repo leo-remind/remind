@@ -58,7 +58,7 @@ var callCounter = 0;
 
 export default function RootLayout() {
   const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    // SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     DMSans_500Medium,
     DMSans_700Bold,
     DMSerifText_400Regular
