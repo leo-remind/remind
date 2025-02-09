@@ -1,6 +1,6 @@
-import { SQLiteDatabase } from 'expo-sqlite';
-import OpenAI from 'openai';
-import env from '../env.json';
+import { SQLiteDatabase } from "expo-sqlite";
+import OpenAI from "openai";
+import env from "../env.json";
 
 const openai = new OpenAI({
   apiKey: env.OPENAI_API_KEY,
@@ -42,7 +42,7 @@ export class MemoryCreator {
   private lastProcessedTimestamp: string;
 
   constructor() {
-    this.lastProcessedTimestamp = new Date(Date.now() - 25000).toISOString(); // Start from 1 hour ago
+    this.lastProcessedTimestamp = new Date(Date.now() - 60000).toISOString();
   }
 
   private async getUnprocessedConversations(db: SQLiteDatabase): Promise<{
@@ -50,55 +50,53 @@ export class MemoryCreator {
     personConversations: PersonConversation[];
     persons: Person[];
   }> {
-
-    console.log("CHAITANYA CODE");
+    let arr = this.lastProcessedTimestamp.split("T");
+    let date = arr[0];
+    let time = arr[1].split(".")[0];
+    let final_time = date + " " + time;
 
     const conversations = await db.getAllAsync<Conversation>(
       `SELECT c.* FROM conversations c
-       LEFT JOIN memory_conversations mc ON c.id = mc.conversation_id
-       WHERE c.time_created > ?
-       AND mc.memory_id IS NULL
+       WHERE c.time_created > ? 
        ORDER BY c.time_created ASC`,
-      [this.lastProcessedTimestamp]
+      [final_time]
     );
 
     if (conversations.length === 0) {
       return { conversations: [], personConversations: [], persons: [] };
     }
 
-    const conversationIds = conversations.map(conv => conv.id);
+    const conversationIds = conversations.map((conv) => conv.id);
 
     const personConversations = await db.getAllAsync<PersonConversation>(
       `SELECT * FROM person_conversations 
-       WHERE conversation_id IN (${conversationIds.join(',')})`,
+       WHERE conversation_id IN (${conversationIds.join(",")})`
     );
 
-    const personIds = [...new Set(personConversations.map(pc => pc.person_id))];
+    const personIds = [...new Set(personConversations.map((pc) => pc.person_id))];
     const persons = await db.getAllAsync<Person>(
       `SELECT id, name, relation FROM persons 
-       WHERE id IN (${personIds.join(',')})`,
+       WHERE id IN (${personIds.join(",")})`
     );
 
     return { conversations, personConversations, persons };
   }
 
-  private async generateMemoryWithAI(
+  private async generateMemoriesWithAI(
     conversations: Conversation[],
     persons: Person[]
-  ): Promise<Memory> {
-    const personsInfo = persons.map(p => `${p.name || 'Unknown'}${p.relation ? ` (${p.relation})` : ''}`).join(', ');
-    const timeRange = {
-      start: new Date(Math.min(...conversations.map(c => new Date(c.transcript_start).getTime()))),
-      end: new Date(Math.max(...conversations.map(c => new Date(c.transcript_end).getTime())))
-    };
+  ): Promise<Memory[]> {
+    const personsInfo = persons
+      .map((p) => `${p.name || "Unknown"}${p.relation ? ` (${p.relation})` : ""}`)
+      .join(", ");
 
     const prompt = `You are given a series of conversations that took place within a one-hour timeframe. Your task is to extract the key events or discussions that hold significant meaning. Generate at most 6 memories from these conversations, with each memory having a meaningful name that encapsulates its essence.
 
 Participants: ${personsInfo}
-Time Range: ${timeRange.start.toISOString()} to ${timeRange.end.toISOString()}
+Time Range: Past 1 hour
 
 Conversations:
-${conversations.map(conv => `- ${conv.summary}`).join('\n')}
+${conversations.map((conv) => `- ${conv.summary}`).join("\n")}
 
 Generate memories in JSON format with the following structure:
 {
@@ -107,7 +105,7 @@ Generate memories in JSON format with the following structure:
       "type": "one of: conversation, activity, event, milestone",
       "name": "A concise, meaningful title that captures the essence of this memory",
       "summary": "A detailed description focusing on the significance of this interaction or event",
-      "date": "A natural language description of when this occurred"
+      "date": "2024-02-09T15:30:00Z"
     }
   ]
 }`;
@@ -119,120 +117,122 @@ Generate memories in JSON format with the following structure:
     });
 
     if (!completion.choices[0].message.content) {
-      throw new Error('Completion content is null');
+      throw new Error("Completion content is null");
     }
+
     const response = JSON.parse(completion.choices[0].message.content);
     
-    return {
-      type: response.type,
-      name: response.name,
-      summary: response.summary,
-      date: response.date,
-      memory_start: timeRange.start.toISOString(),
-      memory_end: timeRange.end.toISOString()
-    };
+    return response.memories.map((memory: any) => ({
+      type: memory.type,
+      name: memory.name,
+      summary: memory.summary,
+      date: new Date(memory.date),
+      memory_start: conversations[0].time_created,
+      memory_end: conversations[conversations.length - 1].time_created,
+    }));
   }
 
-  private async saveMemory(
+  private async saveMemories(
     db: SQLiteDatabase,
-    memory: Memory, 
+    memories: Memory[],
     conversationIds: number[]
   ): Promise<void> {
-    await db.runAsync(
-      `BEGIN TRANSACTION;`
-    );
+    await db.runAsync(`BEGIN TRANSACTION;`);
 
     try {
-      const result = await db.runAsync(
-        `INSERT INTO memory (type, date, name, summary, memory_start, memory_end, trip_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          memory.type,
-          memory.date.toISOString(),
-          memory.name,
-          memory.summary,
-          memory.memory_start,
-          memory.memory_end,
-          memory.trip_id || null
-        ]
-      );
-
-      const memoryId = result.lastId;
-
-      for (const conversationId of conversationIds) {
-        await db.runAsync(
-          `INSERT INTO memory_conversations (memory_id, conversation_id)
-           VALUES (?, ?)`,
-          [memoryId, conversationId]
+      for (const memory of memories) {
+        const result = await db.runAsync(
+          `INSERT INTO memory (type, date, name, summary, memory_start, memory_end, trip_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            memory.type,
+            memory.date.toISOString(),
+            memory.name,
+            memory.summary,
+            memory.memory_start,
+            memory.memory_end,
+            memory.trip_id || null,
+          ]
         );
+
+        const memoryId = result.lastInsertRowId;
+
+        for (const conversationId of conversationIds) {
+          await db.runAsync(
+            `INSERT INTO memory_conversations (memory_id, conversation_id)
+             VALUES (?, ?)`,
+            [memoryId, conversationId]
+          );
+        }
       }
 
-      await db.runAsync(
-        `COMMIT;`
-      );
+      await db.runAsync(`COMMIT;`);
     } catch (error) {
-      await db.runAsync(
-        `ROLLBACK;`
-      );
+      await db.runAsync(`ROLLBACK;`);
       throw error;
     }
   }
 
   public async createMemories(db: SQLiteDatabase): Promise<void> {
     try {
-      const { conversations, personConversations, persons } = await this.getUnprocessedConversations(db);
-      
+      const { conversations, personConversations, persons } =
+        await this.getUnprocessedConversations(db);
+
       if (conversations.length === 0) {
-        console.log('No new conversations to process');
+        console.log("No new conversations to process");
         return;
       }
 
-      // Group conversations by participating persons
-      const conversationGroups = new Map<string, {
-        conversations: Conversation[];
-        persons: Person[];
-      }>();
-      
+      const conversationGroups = new Map<
+        string,
+        {
+          conversations: Conversation[];
+          persons: Person[];
+        }
+      >();
+
       for (const conversation of conversations) {
         const participantIds = personConversations
-          .filter(pc => pc.conversation_id === conversation.id)
-          .map(pc => pc.person_id)
+          .filter((pc) => pc.conversation_id === conversation.id)
+          .map((pc) => pc.person_id)
           .sort()
-          .join('-');
-        
+          .join("-");
+
         if (!conversationGroups.has(participantIds)) {
-          const groupPersons = persons.filter(p => 
-            participantIds.split('-').includes(p.id.toString())
+          const groupPersons = persons.filter((p) =>
+            participantIds.split("-").includes(p.id.toString())
           );
-          
+
           conversationGroups.set(participantIds, {
             conversations: [],
-            persons: groupPersons
+            persons: groupPersons,
           });
         }
-        
-        conversationGroups.get(participantIds)?.conversations.push(conversation);
+
+        conversationGroups
+          .get(participantIds)
+          ?.conversations.push(conversation);
       }
 
       for (const [_, group] of conversationGroups) {
-        const memory = await this.generateMemoryWithAI(
+        const memories = await this.generateMemoriesWithAI(
           group.conversations,
           group.persons
         );
-        
-        await this.saveMemory(
+
+        await this.saveMemories(
           db,
-          memory, 
-          group.conversations.map(conv => conv.id)
+          memories,
+          group.conversations.map((conv) => conv.id)
         );
       }
 
       if (conversations.length > 0) {
-        this.lastProcessedTimestamp = conversations[conversations.length - 1].time_created;
+        this.lastProcessedTimestamp =
+          conversations[conversations.length - 1].time_created;
       }
-
     } catch (error) {
-      console.error('Error creating memories:', error);
+      console.error("Error creating memories:", error);
       throw error;
     }
   }
