@@ -29,7 +29,6 @@ interface Person {
 
 interface Memory {
   id?: number;
-  type: string;
   date: Date;
   name: string;
   summary: string;
@@ -52,17 +51,10 @@ export class MemoryCreator {
   }> {
     console.log("CHAITANYA CODE");
 
-    const converstaions_content = await db.getAllAsync<Conversation>(
-      `SELECT * FROM conversations`
-    );
-
-    console.log(converstaions_content);
-
     let arr = this.lastProcessedTimestamp.split("T");
     let date = arr[0];
     let time = arr[1].split(".")[0];
     let final_time = date + " " + time;
-    console.log("final_time", final_time);
 
     const conversations = await db.getAllAsync<Conversation>(
       `SELECT c.* FROM conversations c
@@ -145,7 +137,7 @@ export class MemoryCreator {
     return response.memories.map((memory: any) => ({
       name: memory.name,
       summary: memory.summary,
-      date: new Date(memory.date),
+      date: new Date(),
       memory_start: conversations[0].time_created,
       memory_end: conversations[conversations.length - 1].time_created,
     }));
@@ -162,7 +154,7 @@ export class MemoryCreator {
       for (const memory of memories) {
         const result = await db.runAsync(
           `INSERT INTO memory (date, name, summary, memory_start, memory_end, trip_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           VALUES (?, ?, ?, ?, ?, ?)`,
           [
             memory.date.toISOString(),
             memory.name,
@@ -172,8 +164,10 @@ export class MemoryCreator {
             memory.trip_id || null,
           ]
         );
-  
+        
         const memoryId = result.lastInsertRowId;
+
+        console.log("MEMORY_INSERT: ", memoryId);
   
         // Link each memory to all conversations in the group
         for (const conversationId of conversationIds) {
@@ -183,13 +177,25 @@ export class MemoryCreator {
             [memoryId, conversationId]
           );
         }
+
+        console.log("MEMORY_CONVERSATION_INSERT: ", memoryId);
       }
   
       await db.runAsync(`COMMIT;`);
+
+      console.log("DB CHANGES FINALISED");
     } catch (error) {
       await db.runAsync(`ROLLBACK;`);
       throw error;
     }
+
+    // query for al memories
+    const memories_content = await db.getAllAsync<Memory>(
+      `SELECT * FROM memory`
+    );
+
+    console.log(memories_content);
+
   }
   
   public async createMemories(db: SQLiteDatabase): Promise<void> {
