@@ -266,13 +266,13 @@ TaskManager.defineTask(
           `INSERT INTO location (place_name, time_of_polling, lat, lon) VALUES ('${place_name}', CURRENT_TIMESTAMP, ${lat}, ${long})`
         );
 
-        console.log("Inserted location with ID: ", result.lastInsertRowId);
+        // console.log("Inserted location with ID: ", result.lastInsertRowId);
 
         // const ms = new MediaSync(db);
         // await ms.syncPhotos();
 
       } else {
-        console.log("No locations data available");
+        console.log(`${new Date().toISOString()}: No locations data available`);
       }
     }
   }

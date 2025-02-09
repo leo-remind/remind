@@ -119,11 +119,11 @@ const tryAddConv = async (db: SQLiteDatabase) => {
 
   const audioData = new Uint8Array(Buffer.from(audioDataB64, "base64"));
 
-  console.log("adding conv")
+  // console.log("adding conv")
   await addConversation(db, audioData, '', '')
-  console.log("adding conv done")
-  console.log("convos:", await db.getAllAsync("SELECT * FROM conversations;"))
-  console.log("convos:", await db.getAllAsync("SELECT * FROM person_conversations; "))
+  console.log("Added conv done")
+  // console.log("convos:", await db.getAllAsync("SELECT * FROM conversations;"))
+  // console.log("convos:", await db.getAllAsync("SELECT * FROM person_conversations; "))
 }
 
 const wavToBlob = (arr: Uint8Array, fname: string): Blob => {
@@ -165,11 +165,11 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
   try {
     const creationTime = new Date().toISOString();
 
-    console.log("yo");
+    // console.log("yo");
     const persons: { 'id': number, 'name': string, 'audio': Uint8Array }[] = await db.getAllAsync("SELECT * FROM persons");
     const ret: { 'name': string } | null = await db.getFirstAsync("SELECT * FROM persons WHERE id = 0;")
     const userName = ret ? ret.name : "person_0";
-    console.log("user is", userName)
+    console.log("[conversation]: user is", userName)
 
     const formData = new FormData()
     for (let person of persons) {
@@ -187,7 +187,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
       responseType: 'json'
     })
 
-    console.log("received response from sarvam")
+    // console.log("received response from sarvam")
     const entries: SarvamEntry[] = response.data.diarized_transcript.entries
 
     let mapping: Map<string, { 'id': number, 'name': string }> = new Map()
@@ -198,7 +198,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
       idx += 1
     }
 
-    console.log("building convoarr")
+    // console.log("building convoarr")
     let convoArr = []
     for (; idx < entries.length; idx++) {
       const who = mapping.get(entries[idx].speaker_id);
@@ -207,8 +207,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
 
     let fullConvo = convoArr.join("\n\n")
     const summary = await generateConvSummary(fullConvo, userName)
-    console.log("summarized:", summary)
-
+    console.log("[conversation]: summarized:", summary)
 
     const result = await db.getFirstAsync(`
       SELECT id 
@@ -229,7 +228,7 @@ export const addConversation = async (db: SQLiteDatabase, convo: Uint8Array, tra
 
 
     for (let [_, value] of mapping) {
-      console.log(value.name, "is involved in convo")
+      console.log("[conversation]: ", value.name, "is involved in convo")
       await db.runAsync("INSERT INTO person_conversations (person_id, conversation_id) VALUES (?, ?);", value.id, insertionResult.lastInsertRowId);
     }
     return true
