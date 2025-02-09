@@ -42,7 +42,7 @@ export class MemoryCreator {
   private lastProcessedTimestamp: string;
 
   constructor() {
-    this.lastProcessedTimestamp = new Date(Date.now() - 60000).toISOString();
+    this.lastProcessedTimestamp = new Date(Date.now() - 60000).toISOString(); // Start from 1 hour ago
   }
 
   private async getUnprocessedConversations(db: SQLiteDatabase): Promise<{
@@ -50,10 +50,19 @@ export class MemoryCreator {
     personConversations: PersonConversation[];
     persons: Person[];
   }> {
+    console.log("CHAITANYA CODE");
+
+    const converstaions_content = await db.getAllAsync<Conversation>(
+      `SELECT * FROM conversations`
+    );
+
+    console.log(converstaions_content);
+
     let arr = this.lastProcessedTimestamp.split("T");
     let date = arr[0];
     let time = arr[1].split(".")[0];
     let final_time = date + " " + time;
+    console.log("final_time", final_time);
 
     const conversations = await db.getAllAsync<Conversation>(
       `SELECT c.* FROM conversations c
@@ -61,6 +70,8 @@ export class MemoryCreator {
        ORDER BY c.time_created ASC`,
       [final_time]
     );
+
+    console.log(final_time);
 
     if (conversations.length === 0) {
       return { conversations: [], personConversations: [], persons: [] };
@@ -73,7 +84,9 @@ export class MemoryCreator {
        WHERE conversation_id IN (${conversationIds.join(",")})`
     );
 
-    const personIds = [...new Set(personConversations.map((pc) => pc.person_id))];
+    const personIds = [
+      ...new Set(personConversations.map((pc) => pc.person_id)),
+    ];
     const persons = await db.getAllAsync<Person>(
       `SELECT id, name, relation FROM persons 
        WHERE id IN (${personIds.join(",")})`
@@ -82,13 +95,20 @@ export class MemoryCreator {
     return { conversations, personConversations, persons };
   }
 
-  private async generateMemoriesWithAI(
+  private async generateMemoryWithAI(
     conversations: Conversation[],
     persons: Person[]
-  ): Promise<Memory[]> {
+  ): Promise<Memory> {
     const personsInfo = persons
-      .map((p) => `${p.name || "Unknown"}${p.relation ? ` (${p.relation})` : ""}`)
+      .map(
+        (p) => `${p.name || "Unknown"}${p.relation ? ` (${p.relation})` : ""}`
+      )
       .join(", ");
+
+      // const timeRange = {
+      //   start: new Date(conversations[0].time_created),
+      //   end: new Date(conversations[conversations.length - 1].time_created),
+      // }
 
     const prompt = `You are given a series of conversations that took place within a one-hour timeframe. Your task is to extract the key events or discussions that hold significant meaning. Generate at most 6 memories from these conversations, with each memory having a meaningful name that encapsulates its essence.
 
@@ -105,7 +125,7 @@ Generate memories in JSON format with the following structure:
       "type": "one of: conversation, activity, event, milestone",
       "name": "A concise, meaningful title that captures the essence of this memory",
       "summary": "A detailed description focusing on the significance of this interaction or event",
-      "date": "2024-02-09T15:30:00Z"
+      "date": "A natural language description of when this occurred"
     }
   ]
 }`;
@@ -119,51 +139,51 @@ Generate memories in JSON format with the following structure:
     if (!completion.choices[0].message.content) {
       throw new Error("Completion content is null");
     }
-
     const response = JSON.parse(completion.choices[0].message.content);
+
+    console.log(completion.choices[0].message.content);
+    console.log(response.date);
     
-    return response.memories.map((memory: any) => ({
-      type: memory.type,
-      name: memory.name,
-      summary: memory.summary,
-      date: new Date(memory.date),
+    return {
+      type: response.type,
+      name: response.name,
+      summary: response.summary,
+      date: response.date,
       memory_start: conversations[0].time_created,
       memory_end: conversations[conversations.length - 1].time_created,
-    }));
+    };
   }
 
-  private async saveMemories(
+  private async saveMemory(
     db: SQLiteDatabase,
-    memories: Memory[],
+    memory: Memory,
     conversationIds: number[]
   ): Promise<void> {
     await db.runAsync(`BEGIN TRANSACTION;`);
 
     try {
-      for (const memory of memories) {
-        const result = await db.runAsync(
-          `INSERT INTO memory (type, date, name, summary, memory_start, memory_end, trip_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            memory.type,
-            memory.date.toISOString(),
-            memory.name,
-            memory.summary,
-            memory.memory_start,
-            memory.memory_end,
-            memory.trip_id || null,
-          ]
+      const result = await db.runAsync(
+        `INSERT INTO memory (type, date, name, summary, memory_start, memory_end, trip_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          memory.type,
+          memory.date.toISOString(),
+          memory.name,
+          memory.summary,
+          memory.memory_start,
+          memory.memory_end,
+          memory.trip_id || null,
+        ]
+      );
+
+      const memoryId = result.lastInsertRowId;
+
+      for (const conversationId of conversationIds) {
+        await db.runAsync(
+          `INSERT INTO memory_conversations (memory_id, conversation_id)
+           VALUES (?, ?)`,
+          [memoryId, conversationId]
         );
-
-        const memoryId = result.lastInsertRowId;
-
-        for (const conversationId of conversationIds) {
-          await db.runAsync(
-            `INSERT INTO memory_conversations (memory_id, conversation_id)
-             VALUES (?, ?)`,
-            [memoryId, conversationId]
-          );
-        }
       }
 
       await db.runAsync(`COMMIT;`);
@@ -183,6 +203,7 @@ Generate memories in JSON format with the following structure:
         return;
       }
 
+      // Group conversations by participating persons
       const conversationGroups = new Map<
         string,
         {
@@ -215,14 +236,14 @@ Generate memories in JSON format with the following structure:
       }
 
       for (const [_, group] of conversationGroups) {
-        const memories = await this.generateMemoriesWithAI(
+        const memory = await this.generateMemoryWithAI(
           group.conversations,
           group.persons
         );
 
-        await this.saveMemories(
+        await this.saveMemory(
           db,
-          memories,
+          memory,
           group.conversations.map((conv) => conv.id)
         );
       }
